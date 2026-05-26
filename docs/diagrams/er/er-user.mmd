@@ -1,0 +1,66 @@
+erDiagram
+    ROLE {
+        ObjectId _id
+        string   name "ADMIN / MANAGER / STAFF / USER"
+    }
+
+    SHOP {
+        ObjectId _id
+        string   name
+        string   cityName "nullable"
+    }
+
+    USER {
+        ObjectId _id
+        string   username
+        string   email
+        string   provider         "local / google"
+        ObjectId roleId           "nullable"
+        ObjectId shopId           "nullable — staff only"
+        boolean  isLocked
+        boolean  isVerified
+        string   employmentStatus "nullable — staff only"
+    }
+
+    PRODUCT {
+        ObjectId _id
+        string   name
+        string   slug
+    }
+
+    FAVORITE {
+        ObjectId _id
+        ObjectId userId
+        ObjectId productId
+    }
+
+    REVIEW {
+        ObjectId _id
+        ObjectId userId    "nullable"
+        ObjectId productId "nullable"
+        number   rating    "1-5"
+    }
+
+    POST {
+        ObjectId _id
+        string   title
+        string   slug
+        ObjectId authorId "nullable"
+    }
+
+    AUDIT_LOG {
+        ObjectId _id
+        ObjectId userId     "nullable"
+        string   action
+        string   entityName
+        ObjectId entityId   "nullable"
+    }
+
+    ROLE    ||--o{ USER      : "assigned to"
+    SHOP    ||--o{ USER      : "employs"
+    USER    ||--o{ FAVORITE  : "saves"
+    USER    ||--o{ REVIEW    : "writes"
+    USER    ||--o{ POST      : "authors"
+    USER    ||--o{ AUDIT_LOG : "recorded by"
+    PRODUCT ||--o{ FAVORITE  : "favorited as"
+    PRODUCT ||--o{ REVIEW    : "reviewed in"

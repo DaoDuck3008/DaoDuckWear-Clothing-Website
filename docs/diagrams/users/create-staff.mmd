@@ -1,0 +1,31 @@
+%%{init: {'themeVariables': {'fontSize': '25px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(UsersController + UsersService)
+    participant Roles as MongoDB (roles)
+    participant Users as MongoDB (users)
+    participant Mail as MailService
+
+    Admin->>FE: Điền thông tin nhân viên mới
+    FE->>BE: POST /users/staff { username, email, roleId, shopId?, profile... }
+
+    BE->>Roles: Lấy danh sách role nhân viên (ADMIN, MANAGER, STAFF)
+    BE->>Users: Kiểm tra email và username chưa tồn tại
+
+    alt Role không hợp lệ / Non-ADMIN role thiếu shopId
+        BE-->>FE: 400 Lỗi validation
+        FE-->>Admin: Hiển thị lỗi
+    else Email hoặc username đã tồn tại
+        BE-->>FE: 409 Conflict
+        FE-->>Admin: Hiển thị lỗi
+    else Hợp lệ
+        BE->>BE: Tạo mật khẩu ngẫu nhiên 10 ký tự
+        BE->>BE: bcrypt.hash(password)
+        Note over BE: Mã hoá mật khẩu trước khi lưu vào DB
+        BE->>Users: Tạo user document (isVerified: true, provider: local)
+        BE-)Mail: Gửi email chào mừng kèm username + mật khẩu tạm
+        BE-->>FE: 201 { staff }
+        FE-->>Admin: Thông báo tạo tài khoản thành công
+    end

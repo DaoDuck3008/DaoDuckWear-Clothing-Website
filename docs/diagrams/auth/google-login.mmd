@@ -1,0 +1,60 @@
+%%{init: {'themeVariables': {'fontSize': '25px'}}}%%
+sequenceDiagram
+    autonumber
+    actor User as Người dùng
+    participant FE as Frontend<br/>(Next.js)
+    participant Store as Zustand Store
+    participant BE as Backend<br/>(AuthController + AuthService)
+    participant Google as Google OAuth
+    participant Users as MongoDB (users)
+    participant Roles as MongoDB (roles)
+    participant Redis
+
+    User->>FE: Nhấn "Đăng nhập bằng Google"
+    FE->>Google: Mở Google Sign-In popup
+    User->>Google: Chọn tài khoản Google
+    Google-->>FE: Trả về Google ID Token
+    FE->>BE: POST /auth/google { credential: idToken }
+    BE->>Google: verifyIdToken(idToken) — kiểm tra token phía server
+
+    alt Token không hợp lệ
+        Google-->>BE: Error
+        BE-->>FE: 401 Xác thực Google thất bại
+        FE-->>User: Hiển thị lỗi
+    else Tài khoản bị khóa
+        Google-->>BE: payload { email, name, picture }
+        BE->>Users: findOne({ email, provider: 'google' }) + populate roleId, shopId
+        Users-->>BE: user (isLocked: true)
+        BE-->>FE: 401 Tài khoản bị tạm khóa
+        FE-->>User: Hiển thị lỗi
+    else Đăng nhập thành công — user đã tồn tại
+        Google-->>BE: payload { email, name, picture }
+        BE->>Users: findOne({ email, provider: 'google' }) + populate roleId, shopId
+        Users-->>BE: user document hợp lệ
+        BE->>BE: signAccessToken({ id, role, shopId }) — TTL 15m
+        BE->>BE: signRefreshToken({ id }) — TTL 7d + UUID
+        BE->>Redis: SET refresh_token:{UUID} → userId (TTL 7d)
+        BE-->>FE: 200 { accessToken, user }<br/>+ Set-Cookie: refreshToken (httpOnly, 7d)
+        FE->>Store: Lưu thông tin đăng nhập vào bộ nhớ ứng dụng
+        Store->>Store: Ghi nhớ trạng thái đăng nhập<br/>(tự động đăng nhập lần sau)
+        FE-->>User: Chuyển về trang chủ
+    else Đăng nhập thành công — tài khoản mới (tự động tạo)
+        Google-->>BE: payload { email, name, picture }
+        BE->>Users: findOne({ email, provider: 'google' })
+        Users-->>BE: null
+        BE->>Roles: findOne({ name: 'USER' })
+        Roles-->>BE: role document
+        BE->>BE: hashPassword(randomPassword)
+        Note over BE,Google: Tài khoản Google không có mật khẩu thực.<br/>Hệ thống sinh và lưu mật khẩu ngẫu nhiên
+        BE->>Users: Tạo user mới { provider: 'google',<br/>isVerified: true, avatar: picture }
+        Users-->>BE: newUser
+        BE->>Users: findById(newUser._id) + populate roleId, shopId
+        Users-->>BE: user document đầy đủ
+        BE->>BE: signAccessToken({ id, role, shopId }) — TTL 15m
+        BE->>BE: signRefreshToken({ id }) — TTL 7d + UUID
+        BE->>Redis: SET refresh_token:{UUID} → userId (TTL 7d)
+        BE-->>FE: 200 { accessToken, user }<br/>+ Set-Cookie: refreshToken (httpOnly, 7d)
+        FE->>Store: Lưu thông tin đăng nhập vào bộ nhớ ứng dụng
+        Store->>Store: Ghi nhớ trạng thái đăng nhập<br/>(tự động đăng nhập lần sau)
+        FE-->>User: Chuyển về trang chủ
+    end

@@ -1,0 +1,35 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(CategoriesController + CategoriesService)
+    participant Categories as MongoDB (categories)
+    participant Products as MongoDB (products)
+    participant Redis
+
+    Admin->>FE: Xác nhận xoá danh mục
+    FE->>BE: DELETE /categories/:id
+
+    BE->>Categories: Tìm category theo id (deletedAt: null)
+
+    alt Không tìm thấy
+        Categories-->>BE: null
+        BE-->>FE: 404 Không tìm thấy danh mục
+        FE-->>Admin: Hiển thị lỗi
+    else Hợp lệ
+        Categories-->>BE: category document
+        BE->>Products: Kiểm tra có sản phẩm đang dùng category này (deletedAt: null)
+
+        break Có sản phẩm đang dùng danh mục
+            BE-->>FE: 400 CATEGORY_HAS_PRODUCTS
+            FE-->>Admin: Hiển thị lỗi
+        end
+
+        BE->>Categories: Orphan children — $set { parentId: null } cho các danh mục con
+        Note over BE,Categories: Danh mục con trở thành danh mục gốc thay vì bị xoá theo
+        BE->>Categories: Soft-delete — $set { deletedAt: now }
+        BE->>Redis: Xóa cây dữ liệu category được lưu trong Cache
+        BE-->>FE: 200 Xoá danh mục thành công
+        FE-->>Admin: Thông báo xoá thành công
+    end

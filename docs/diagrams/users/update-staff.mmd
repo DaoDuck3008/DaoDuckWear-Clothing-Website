@@ -1,0 +1,34 @@
+%%{init: {'themeVariables': {'fontSize': '25px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(UsersController + UsersService)
+    participant Roles as MongoDB (roles)
+    participant Users as MongoDB (users)
+
+    Admin->>FE: Chỉnh sửa thông tin nhân viên
+    FE->>BE: PATCH /users/staff/:id { updates }
+
+    BE->>Users: Tìm staff theo id (deletedAt: null), populate roleId + shopId
+
+    alt Không tìm thấy / Không phải tài khoản nhân viên
+        Users-->>BE: null hoặc role là USER
+        BE-->>FE: 404 Không tìm thấy nhân viên
+        FE-->>Admin: Hiển thị lỗi
+    else Hợp lệ
+        Users-->>BE: staff document
+        opt Thay đổi username
+            BE->>Users: Kiểm tra username chưa bị dùng bởi user khác
+        end
+        opt Thay đổi role
+            BE->>Roles: Lấy role mới, xác định shopId (ADMIN role → null)
+        end
+        break Username đã tồn tại / Non-ADMIN role thiếu shopId
+            BE-->>FE: 409 / 400 Lỗi validation
+            FE-->>Admin: Hiển thị lỗi
+        end
+        BE->>Users: findByIdAndUpdate $set: { updates }
+        BE-->>FE: 200 { staff }
+        FE-->>Admin: Thông báo cập nhật thành công
+    end

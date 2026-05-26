@@ -1,0 +1,46 @@
+erDiagram
+    USER {
+        ObjectId _id
+        string   username
+    }
+
+    VOUCHER {
+        ObjectId _id
+        string   code
+        string   discountType  "PERCENTAGE / FIXED"
+        number   discountValue
+        number   usedCount
+        number   usageLimit    "nullable"
+        date     expiredAt     "nullable"
+    }
+
+    ORDER {
+        ObjectId _id
+        string   orderCode
+        ObjectId userId        "nullable"
+        string   voucherCode   "nullable — soft ref"
+        string   status        "PENDING / CONFIRMED / SHIPPING / COMPLETED / CANCELLED"
+        string   paymentMethod "COD / VNPAY / MOMO / BANK_TRANSFER"
+        string   paymentStatus "UNPAID / PAID / REFUNDED"
+        number   finalTotal
+    }
+
+    PAYMENT {
+        ObjectId _id
+        ObjectId orderId
+        string   method
+        number   amount
+        string   status        "PENDING / SUCCESS / FAILED"
+        string   transactionId "nullable"
+    }
+
+    CART {
+        ObjectId _id
+        ObjectId userId
+    }
+
+    USER    ||--o{ ORDER   : "places"
+    USER    ||--o| CART    : "has"
+    USER    }o--o{ VOUCHER : "uses"
+    ORDER   ||--|| PAYMENT : "paid via"
+    VOUCHER ||--o{ ORDER   : "applied to (soft ref via code)"

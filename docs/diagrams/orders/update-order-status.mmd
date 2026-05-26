@@ -1,0 +1,40 @@
+%%{init: {'themeVariables': {'fontSize': '25px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Staff
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(OrdersController + OrdersService)
+    participant Orders as MongoDB (orders)
+    participant Inventories as MongoDB (inventories)
+    participant Users as MongoDB (users)
+    participant Mail as MailService
+
+    Staff->>FE: Chọn trạng thái mới cho đơn hàng
+    FE->>BE: PATCH /orders/:id/status { status }
+
+    BE->>Orders: Tìm order theo id
+
+    alt Không tìm thấy đơn hàng
+        Orders-->>BE: null
+        BE-->>FE: 404 Không tìm thấy đơn hàng
+        FE-->>Staff: Hiển thị lỗi
+    else status = CANCELLED
+        Orders-->>BE: order document
+        BE->>Inventories: reservedQuantity -= quantity (từng variant)
+        BE->>Orders: status = CANCELLED
+        BE-->>FE: 200 Cập nhật thành công
+        FE-->>Staff: Thông báo cập nhật
+    else status = COMPLETED
+        Orders-->>BE: order document
+        BE->>Inventories: actualQuantity -= quantity, reservedQuantity -= quantity (từng variant)
+        BE->>Orders: status = COMPLETED, paymentStatus = PAID
+        BE->>Users: Lấy thông tin khách hàng (email)
+        BE->>Mail: Gửi email xác nhận hoàn thành đơn hàng
+        BE-->>FE: 200 Cập nhật thành công
+        FE-->>Staff: Thông báo cập nhật
+    else Trạng thái khác (CONFIRMED, SHIPPING, ...)
+        Orders-->>BE: order document
+        BE->>Orders: Cập nhật status trực tiếp
+        BE-->>FE: 200 Cập nhật thành công
+        FE-->>Staff: Thông báo cập nhật
+    end

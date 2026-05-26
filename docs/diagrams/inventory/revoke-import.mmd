@@ -1,0 +1,41 @@
+%%{init: {'themeVariables': {'fontSize': '25px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(InventoryController + InventoryService)
+    participant Imports as MongoDB (inventory_imports)
+    participant Inventories as MongoDB (inventories)
+    participant Redis
+
+    Admin->>FE: Yêu cầu huỷ phiếu nhập kho
+    FE->>BE: PATCH /inventory/imports/:id/revoke { note? }
+
+    BE->>Imports: Tìm import theo id, kiểm tra quyền truy cập
+
+    alt Không tìm thấy / Không có quyền
+        Imports-->>BE: trả null hoặc shopId không khớp
+        BE-->>FE: 404 / 403 Lỗi truy cập
+        FE-->>Admin: Hiển thị lỗi
+    else Status đã là REVOKED (Đã bị thu hồi trước đó)
+        Imports-->>BE: trả phiếu nhập với status REVOKED
+        BE-->>FE: 400 IMPORT_ALREADY_REVOKED
+        FE-->>Admin: Hiển thị lỗi
+    else Hợp lệ (status = ACTIVE)
+        Imports-->>BE: phiếu nhập kho document
+        BE->>BE: Bắt đầu MongoDB transaction
+        BE->>Inventories: Lấy tồn kho hiện tại từng variant
+        BE->>BE: Kiểm tra quantity - importedQty >= reservedQuantity (từng variant)
+
+        break Tồn kho sau huỷ không đủ đáp ứng đơn đang giữ
+            BE-->>FE: 400 IMPORT_REVOKE_INSUFFICIENT_STOCK { blockers[] }
+            FE-->>Admin: Hiển thị danh sách variant bị chặn
+        end
+
+        BE->>Inventories: bulkWrite — quantity -= importedQty (từng variant)
+        BE->>Imports: status = REVOKED, revokedBy, revokedAt, note
+        BE->>BE: Commit transaction
+        BE->>Redis: Xoá cache sản phẩm
+        BE-->>FE: 200 { import }
+        FE-->>Admin: Thông báo huỷ thành công
+    end

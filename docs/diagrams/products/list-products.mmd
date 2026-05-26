@@ -1,0 +1,24 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor User
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(ProductsController + ProductsService)
+    participant Variants as MongoDB (product_variants)
+    participant Products as MongoDB (products)
+    participant Categories as MongoDB (categories)
+
+    User->>FE: Truy cập trang danh sách / lọc sản phẩm
+    FE->>BE: GET /products?page=1&limit=20&color=&size=&category=&sort=
+
+    alt Có filter theo màu hoặc size
+        BE->>Variants: Tìm variants khớp filter (color / size)
+        Variants-->>BE: productIds[]
+    end
+
+    BE->>Products: Query products (status=active, priceRange, productIds) + phân trang
+    BE->>Categories: Lấy thông tin danh mục
+    Products-->>BE: products[], total
+
+    BE-->>FE: 200 { products[], total, page, limit }
+    FE-->>User: Hiển thị danh sách sản phẩm

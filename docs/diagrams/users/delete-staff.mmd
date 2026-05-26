@@ -1,0 +1,28 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(UsersController + UsersService)
+    participant Users as MongoDB (users)
+
+    Admin->>FE: Xác nhận xoá tài khoản nhân viên
+    FE->>BE: DELETE /users/staff/:id
+
+    break id trùng với tài khoản đang đăng nhập
+        BE-->>FE: 400 Không thể tự xoá tài khoản của mình
+        FE-->>Admin: Hiển thị lỗi
+    end
+
+    BE->>Users: Tìm staff theo id (deletedAt: null)
+
+    alt Không tìm thấy
+        Users-->>BE: null
+        BE-->>FE: 404 Không tìm thấy nhân viên
+        FE-->>Admin: Hiển thị lỗi
+    else Hợp lệ
+        Users-->>BE: staff document
+        BE->>Users: Soft-delete — $set { deletedAt: now }
+        BE-->>FE: 200 { success: true }
+        FE-->>Admin: Thông báo xoá thành công
+    end

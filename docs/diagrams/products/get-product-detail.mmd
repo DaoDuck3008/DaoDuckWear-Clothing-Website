@@ -1,0 +1,33 @@
+%%{init: {'themeVariables': {'fontSize': '25px'}}}%%
+sequenceDiagram
+    autonumber
+    actor User
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(ProductsController + ProductsService)
+    participant Redis
+    participant Products as MongoDB (products)
+    participant Categories as MongoDB (categories)
+    participant Variants as MongoDB (product_variants)
+    participant Inventories as MongoDB (inventories)
+
+    User->>FE: Truy cập trang chi tiết sản phẩm
+    FE->>BE: GET /products/:slug
+
+    BE->>Redis: GET product:{slug}
+    Note over BE, Products: Luôn kiểm tra Cache trên Redis trước để giảm tải thời gian truy vấn.
+
+    alt Cache hit
+        Redis-->>BE: Dữ liệu đã cache
+        BE-->>FE: 200 { product } (từ cache)
+    else Cache miss
+        Redis-->>BE: null
+        BE->>Products: Tìm product theo slug
+        BE->>Categories: Populate thông tin danh mục
+        BE->>Variants: Lấy tất cả variants của product
+        BE->>Inventories: Lấy inventories kèm thông tin shop
+        BE->>BE: Gộp từng variant với inventory tương ứng
+        BE->>Redis: SET product:{slug} (TTL 5 phút)
+        BE-->>FE: 200 { product, variants[], inventories }
+    end
+
+    FE-->>User: Hiển thị trang chi tiết sản phẩm

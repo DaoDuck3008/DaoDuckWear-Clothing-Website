@@ -1,0 +1,15 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(CartController + CartService)
+    participant Cart as MongoDB (carts)
+
+    Customer->>FE: Xoá sản phẩm khỏi giỏ hàng
+    FE->>BE: DELETE /cart/items/:itemId
+
+    BE->>Cart: cart.items = items.filter(i => i._id != itemId)
+    Cart-->>BE: Đã lưu
+    BE-->>FE: 200 { cart }
+    FE-->>Customer: Cập nhật giỏ hàng

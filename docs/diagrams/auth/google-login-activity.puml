@@ -1,0 +1,65 @@
+@startuml
+skinparam backgroundColor White
+skinparam swimlaneWidth 300
+skinparam activityFontSize 13
+skinparam activityBorderColor #555555
+skinparam activityBackgroundColor #EBF2FF
+skinparam swimlaneBorderColor #888888
+skinparam arrowColor #555555
+
+|Customer|
+start
+:Nhấn "Đăng nhập bằng Google"\n+ chọn tài khoản Google;
+
+|Google OAuth|
+:Xác thực người dùng\n+ trả về ID Token;
+
+|Customer|
+:Gửi ID Token lên hệ thống;
+
+|Hệ thống|
+:Xác minh ID Token\nvới Google;
+
+if (Token không hợp lệ?) then (có)
+  #FFDDDD:Trả về lỗi xác thực (401);
+  |Customer|
+  #FFDDDD:Xem thông báo lỗi;
+  stop
+else (không)
+endif
+
+|Hệ thống|
+:Trích xuất email từ token\nvà tìm tài khoản;
+
+if (Tài khoản bị khóa?) then (có)
+  #FFDDDD:Trả về lỗi tài khoản bị khóa (403);
+  |Customer|
+  #FFDDDD:Xem thông báo lỗi;
+  stop
+else (không)
+endif
+
+if (Chưa có tài khoản Google?) then (có)
+  |Hệ thống|
+  :Tạo tài khoản mới\n(provider: google, isVerified: true);
+  note right
+    Tài khoản được tạo tự động với:
+    - email lấy từ Google
+    - quyền mặc định: USER
+  end note
+else (đã có)
+endif
+
+|Hệ thống|
+:Tạo phiên đăng nhập\n(access token + refresh token);
+note right
+  **access_token** — JWT ngắn hạn (TTL 15 phút).
+  **refresh_token** — Token dài hạn (TTL 7 ngày),
+  lưu trong httpOnly cookie.
+end note
+
+|Customer|
+:Được chuyển về trang chủ;
+stop
+
+@enduml

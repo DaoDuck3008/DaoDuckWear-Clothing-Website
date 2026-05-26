@@ -1,0 +1,27 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(CartController + CartService)
+    participant Inventories as MongoDB (inventories)
+    participant Cart as MongoDB (carts)
+
+    Customer->>FE: Thay đổi số lượng sản phẩm trong giỏ
+    FE->>BE: PATCH /cart/items/:itemId { quantity }
+
+    BE->>Cart: Tìm cart item theo itemId
+    BE->>Inventories: Kiểm tra tồn kho tại shop (stock - reservedQuantity)
+    Note over BE, Cart: Stock là tồn kho thực tế của SP. <br/> ReservedQuantity là số lượng SP đã được người khác đặt hàng nhưng chưa giao
+
+    alt Item không tìm thấy trong giỏ
+        BE-->>FE: 404 Không tìm thấy item
+        FE-->>Customer: Hiển thị lỗi
+    else Không đủ tồn kho
+        BE-->>FE: 400 OUT_OF_STOCK
+        FE-->>Customer: Hiển thị lỗi
+    else Hợp lệ
+        BE->>Cart: item.quantity = quantity
+        BE-->>FE: 200 { cart }
+        FE-->>Customer: Cập nhật số lượng
+    end

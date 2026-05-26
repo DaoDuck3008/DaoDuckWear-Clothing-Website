@@ -1,0 +1,43 @@
+erDiagram
+    ROLE {}
+    SHOP {}
+    USER {}
+    CATEGORY {}
+    COLOR {}
+    PRODUCT {}
+    PRODUCT_VARIANT {}
+    INVENTORY {}
+    INVENTORY_IMPORT {}
+    CART {}
+    VOUCHER {}
+    ORDER {}
+    PAYMENT {}
+    REVIEW {}
+    FAVORITE {}
+    POST {}
+    AUDIT_LOG {}
+    BANNER {}
+
+    ROLE             ||--o{ USER             : "assigned to"
+    SHOP             ||--o{ USER             : "employs"
+    CATEGORY         ||--o{ CATEGORY         : "parent of"
+    CATEGORY         ||--o{ PRODUCT          : "categorizes"
+    COLOR            ||--o{ PRODUCT_VARIANT  : "defines color"
+    PRODUCT          ||--|{ PRODUCT_VARIANT  : "has"
+    PRODUCT          ||--o{ INVENTORY        : "tracked in"
+    PRODUCT_VARIANT  ||--|| INVENTORY        : "stocked as"
+    SHOP             ||--o{ INVENTORY        : "stocks"
+    SHOP             ||--o{ INVENTORY_IMPORT : "receives"
+    PRODUCT          ||--o{ INVENTORY_IMPORT : "imported via"
+    USER             ||--o{ INVENTORY_IMPORT : "creates"
+    USER             ||--o{ ORDER            : "places"
+    USER             ||--o| CART             : "has"
+    USER             }o--o{ VOUCHER          : "uses"
+    VOUCHER          ||--o{ ORDER            : "applied to"
+    ORDER            ||--|| PAYMENT          : "paid via"
+    USER             ||--o{ REVIEW           : "writes"
+    PRODUCT          ||--o{ REVIEW           : "reviewed in"
+    USER             ||--o{ FAVORITE         : "saves"
+    PRODUCT          ||--o{ FAVORITE         : "favorited as"
+    USER             ||--o{ POST             : "authors"
+    USER             ||--o{ AUDIT_LOG        : "recorded by"

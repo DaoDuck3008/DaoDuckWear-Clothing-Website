@@ -1,0 +1,31 @@
+%%{init: {'themeVariables': {'fontSize': '25px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(ProductsController + ProductsService)
+    participant Cloudinary
+    participant Products as MongoDB (products)
+    participant Variants as MongoDB (product_variants)
+
+    Admin->>FE: Điền form + chọn ảnh sản phẩm
+    FE->>BE: POST /products (multipart/form-data)
+
+    BE->>Products: Kiểm tra slug đã tồn tại chưa
+    Note over BE,Products: Slug là định danh sản phẩm trên URL, cải thiện SEO và URL thân thiện,<br/>ví dụ: /products/ao-thun-trang-unisex
+    BE->>Variants: Kiểm tra SKU đã tồn tại chưa
+    Note over BE,Variants: SKU là mã định danh duy nhất cho từng biến thể<br/>(màu sắc + kích thước), dùng để quản lý tồn kho
+
+    alt Slug hoặc SKU đã tồn tại
+        BE-->>FE: 409 Slug hoặc SKU đã tồn tại
+        FE-->>Admin: Hiển thị lỗi
+    else Hợp lệ
+        BE->>Cloudinary: Upload ảnh sản phẩm lên cloud
+        Cloudinary-->>BE: imageUrls[]
+        BE->>BE: Bắt đầu MongoDB transaction
+        BE->>Products: Tạo product document
+        BE->>Variants: Tạo variant documents (link ảnh theo màu)
+        BE->>BE: Commit transaction
+        BE-->>FE: 201 { product }
+        FE-->>Admin: Tạo sản phẩm thành công
+    end

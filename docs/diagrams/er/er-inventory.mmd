@@ -1,0 +1,50 @@
+erDiagram
+    SHOP {
+        ObjectId _id
+        string   name
+        string   slug     "nullable"
+        string   cityName "nullable"
+    }
+
+    PRODUCT {
+        ObjectId _id
+        string   name
+        string   slug
+    }
+
+    PRODUCT_VARIANT {
+        ObjectId _id
+        string   sku
+        ObjectId productId
+    }
+
+    USER {
+        ObjectId _id
+        string   username
+    }
+
+    INVENTORY {
+        ObjectId _id
+        ObjectId shopId
+        ObjectId productId
+        ObjectId variantId
+        number   quantity
+        number   reservedQuantity
+    }
+
+    INVENTORY_IMPORT {
+        ObjectId _id
+        ObjectId shopId
+        ObjectId productId
+        ObjectId createdBy
+        ObjectId revokedBy     "nullable"
+        number   totalQuantity
+        string   status        "ACTIVE / REVOKED"
+    }
+
+    SHOP            ||--o{ INVENTORY        : "stocks"
+    PRODUCT         ||--o{ INVENTORY        : "tracked in"
+    PRODUCT_VARIANT ||--|| INVENTORY        : "has stock"
+    SHOP            ||--o{ INVENTORY_IMPORT : "receives"
+    PRODUCT         ||--o{ INVENTORY_IMPORT : "imported via"
+    USER            ||--o{ INVENTORY_IMPORT : "creates"

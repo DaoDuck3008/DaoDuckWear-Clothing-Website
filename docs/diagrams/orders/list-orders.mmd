@@ -1,0 +1,16 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(OrdersController + OrdersService)
+    participant Orders as MongoDB (orders)
+
+    Customer->>FE: Truy cập trang đơn hàng của tôi
+    FE->>BE: GET /orders?page=1&limit=10&status=
+
+    BE->>Orders: Query orders (userId, status filter) + phân trang
+    Orders-->>BE: orders[], total
+
+    BE-->>FE: 200 { orders[], total, page, limit }
+    FE-->>Customer: Hiển thị danh sách đơn hàng

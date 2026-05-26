@@ -1,0 +1,29 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(ProductsController + ProductsService)
+    participant Products as MongoDB (products)
+    participant Variants as MongoDB (product_variants)
+    participant Redis
+
+    Admin->>FE: Xác nhận xoá sản phẩm
+    FE->>BE: DELETE /products/:id
+
+    BE->>Products: Tìm product theo id
+
+    alt Sản phẩm không tồn tại
+        Products-->>BE: null
+        BE-->>FE: 404 Không tìm thấy sản phẩm
+        FE-->>Admin: Hiển thị lỗi
+    else Tồn tại
+        Products-->>BE: product document
+        BE->>Products: Soft-delete product (set deletedAt)
+        BE->>Variants: Soft-delete tất cả variants (set deletedAt)
+        Note over BE, Variants: Soft-delete không xoá hẳn dữ liệu, chỉ ẩn khỏi kết quả truy vấn, hỗ trợ phục hồi sau này.
+        BE->>Redis: Xoá cache theo slug
+        Note over BE,Redis: Xoá cache để trang detail không hiển thị sản phẩm đã xoá
+        BE-->>FE: 200 Xoá sản phẩm thành công
+        FE-->>Admin: Thông báo xoá thành công
+    end

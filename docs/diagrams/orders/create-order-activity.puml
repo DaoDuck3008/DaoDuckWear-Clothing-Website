@@ -1,0 +1,70 @@
+@startuml
+skinparam backgroundColor White
+skinparam swimlaneWidth 300
+skinparam activityFontSize 13
+skinparam activityBorderColor #555555
+skinparam activityBackgroundColor #EBF2FF
+skinparam swimlaneBorderColor #888888
+skinparam arrowColor #555555
+
+|Customer|
+start
+:Xem lại giỏ hàng\nvà nhấn Đặt hàng;
+:Nhập địa chỉ giao hàng\n+ chọn phương thức thanh toán;
+note right
+  Phương thức thanh toán:
+  **COD** — Thanh toán khi nhận hàng
+  **VNPAY** — Thanh toán online
+end note
+
+if (Nhập mã giảm giá?) then (có)
+  :Nhập mã voucher;
+  |Hệ thống|
+  :Kiểm tra voucher\n(hợp lệ, còn lượt dùng, chưa hết hạn);
+  if (Voucher không hợp lệ?) then (có)
+    #FFDDDD:Thông báo voucher không hợp lệ;
+    |Customer|
+    #FFDDDD:Xem thông báo lỗi;
+    stop
+  else (không)
+  endif
+else (không)
+endif
+
+|Hệ thống|
+:Kiểm tra tồn kho\ncho từng sản phẩm trong giỏ;
+
+if (Sản phẩm hết hàng\nhoặc không đủ số lượng?) then (có)
+  #FFDDDD:Thông báo sản phẩm không đủ hàng;
+  |Customer|
+  #FFDDDD:Xem thông báo lỗi;
+  stop
+else (không)
+endif
+
+|Hệ thống|
+:Đặt trước tồn kho\n(reservedQuantity += số lượng đặt);
+note right
+  **reservedQuantity** — số lượng mà khách đã đặt
+  nhưng chưa được giao, vẫn tồn tại trong kho
+end note
+:Tạo đơn hàng\n(lưu snapshot giá + thông tin sản phẩm);
+note right
+  **Snapshot** là giá và tên sản phẩm được sao chép
+  vào đơn hàng tại thời điểm đặt hàng,
+  đảm bảo đơn hàng không bị ảnh hưởng
+  khi sản phẩm thay đổi giá sau này.
+end note
+:Xóa các sản phẩm đã đặt\nkhỏi giỏ hàng;
+
+|Customer|
+:Đơn hàng được tạo thành công\n+ chuyển đến trang xác nhận đơn hàng;
+
+if (Thanh toán online?) then (có)
+  :Thực hiện thanh toán\nqua cổng thanh toán;
+else (COD)
+  :Chờ giao hàng\nvà thanh toán khi nhận;
+endif
+stop
+
+@enduml

@@ -1,0 +1,54 @@
+@startuml
+skinparam backgroundColor White
+skinparam swimlaneWidth 300
+skinparam activityFontSize 13
+skinparam activityBorderColor #555555
+skinparam activityBackgroundColor #EBF2FF
+skinparam swimlaneBorderColor #888888
+skinparam arrowColor #555555
+
+|Customer|
+start
+note left: Giai đoạn 1 — Đăng ký tài khoản
+:Điền email, username, password\nvà nhấn Đăng ký;
+
+|Hệ thống|
+:Kiểm tra thông tin hợp lệ\n(email + username chưa tồn tại);
+
+if (Thông tin đã tồn tại?) then (có)
+  #FFDDDD:Thông báo trùng thông tin (409);
+  |Customer|
+  #FFDDDD:Xem thông báo lỗi;
+  stop
+else (không)
+endif
+
+|Hệ thống|
+:Tạo tài khoản\n(isVerified: false) + sinh mã OTP;
+
+|MailService|
+:Gửi email xác thực\nkèm mã OTP;
+
+|Customer|
+note left: Giai đoạn 2 — Xác thực email
+:Kiểm tra email\n+ nhập mã OTP;
+
+|Hệ thống|
+:Xác thực mã OTP;
+
+if (OTP không hợp lệ\nhoặc hết hạn?) then (có)
+  #FFDDDD:Thông báo lỗi OTP;
+  |Customer|
+  #FFDDDD:Xem thông báo lỗi;
+  stop
+else (không)
+endif
+
+|Hệ thống|
+:Kích hoạt tài khoản\n(isVerified: true);
+
+|Customer|
+:Tài khoản được kích hoạt\n+ chuyển về trang đăng nhập;
+stop
+
+@enduml

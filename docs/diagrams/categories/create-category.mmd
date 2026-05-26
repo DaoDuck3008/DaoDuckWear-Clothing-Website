@@ -1,0 +1,31 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(CategoriesController + CategoriesService)
+    participant Categories as MongoDB (categories)
+    participant Redis
+
+    Admin->>FE: Nhập tên danh mục + chọn danh mục cha (tuỳ chọn)
+    FE->>BE: POST /categories { name, parentId? }
+    Note over Admin,FE: Category có 2 kiểu: cha và con<br/>- Kiểu cha không có parentId là các category chung (VD: áo, quần)<br/>- Kiểu con có parentId là các category con (VD: áo thun, áo sơ mi)
+
+    opt Có parentId
+        BE->>Categories: Tìm kiếm và kiểm tra parent (tồn tại, chưa bị xoá, chưa có parent)
+    end
+    BE->>BE: Generate slug từ name
+    BE->>Categories: Kiểm tra slug chưa tồn tại
+
+    alt Parent không tồn tại / Parent đã có parent (vượt 2 cấp)
+        BE-->>FE: 404 / 400 Lỗi validation
+        FE-->>Admin: Hiển thị lỗi
+    else Slug đã tồn tại
+        BE-->>FE: 400 Tên danh mục đã tồn tại
+        FE-->>Admin: Hiển thị lỗi
+    else Hợp lệ
+        BE->>Categories: Tạo category document { name, slug, parentId }
+        BE->>Redis: Xóa cây dữ liệu category được lưu trong Cache
+        BE-->>FE: 201 { id, name, slug }
+        FE-->>Admin: Thông báo tạo danh mục thành công
+    end

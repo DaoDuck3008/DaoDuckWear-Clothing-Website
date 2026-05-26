@@ -1,0 +1,18 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(CartController + CartService)
+    participant Cart as MongoDB (carts)
+    participant Products as MongoDB (products)
+
+    Customer->>FE: Mở trang giỏ hàng
+    FE->>BE: GET /cart
+
+    BE->>Cart: ensureCart(userId) — lấy hoặc tạo giỏ hàng, populate variantId + shopId
+    Cart-->>BE: cart document (kèm variant + shop)
+    BE->>Products: Lấy thông tin sản phẩm (name, slug, images) cho từng variant
+    Products-->>BE: products[]
+    BE-->>FE: 200 { cart }
+    FE-->>Customer: Hiển thị giỏ hàng

@@ -1,0 +1,22 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(UsersController + UsersService)
+    participant Users as MongoDB (users)
+
+    Admin->>FE: Xem chi tiết nhân viên
+    FE->>BE: GET /users/staff/:id
+
+    BE->>Users: Tìm user theo id (deletedAt: null), populate roleId + shopId
+
+    alt Không tìm thấy / Không phải tài khoản nhân viên
+        Users-->>BE: null hoặc role là USER
+        BE-->>FE: 404 Không tìm thấy nhân viên
+        FE-->>Admin: Hiển thị lỗi
+    else Hợp lệ
+        Users-->>BE: user document (kèm role + shop)
+        BE-->>FE: 200 { staff }
+        FE-->>Admin: Hiển thị thông tin nhân viên
+    end

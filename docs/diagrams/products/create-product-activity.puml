@@ -1,0 +1,42 @@
+@startuml
+skinparam backgroundColor White
+skinparam swimlaneWidth 300
+skinparam activityFontSize 13
+skinparam activityBorderColor #555555
+skinparam activityBackgroundColor #EBF2FF
+skinparam swimlaneBorderColor #888888
+skinparam arrowColor #555555
+
+|Admin|
+start
+:Điền thông tin sản phẩm\n(tên, danh mục, giá, mô tả)\nvà tải lên hình ảnh;
+
+|Hệ thống|
+:Kiểm tra slug sản phẩm\nvà SKU của từng biến thể;
+
+if (Slug hoặc SKU đã tồn tại?) then (có)
+  #FFDDDD:Thông báo trùng thông tin (409);
+  |Admin|
+  #FFDDDD:Xem thông báo lỗi\nvà chỉnh sửa lại;
+  stop
+else (không)
+endif
+
+|Cloudinary|
+:Nhận và lưu trữ hình ảnh\n+ trả về URL công khai;
+
+
+|Hệ thống|
+:Tạo sản phẩm và các biến thể\n(lưu URL ảnh từ Cloudinary);
+note right
+  **Biến thể (Product Variant)**:
+  mỗi tổ hợp size + màu sắc
+  là một biến thể riêng với SKU
+  và giá riêng.
+end note
+
+|Admin|
+:Sản phẩm được tạo thành công\n+ chuyển đến trang chi tiết sản phẩm;
+stop
+
+@enduml

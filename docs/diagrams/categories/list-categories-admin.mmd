@@ -1,0 +1,16 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(CategoriesController + CategoriesService)
+    participant Categories as MongoDB (categories)
+
+    Admin->>FE: Truy cập trang quản lý danh mục
+    FE->>BE: GET /categories/admin
+
+    BE->>Categories: Query tất cả danh mục (deletedAt: null), populate parentId
+    Categories-->>BE: categories[]
+    BE->>BE: Sắp xếp: danh mục gốc trước, danh mục con theo sau (thứ tự tiếng Việt)
+    BE-->>FE: 200 { categories[] }
+    FE-->>Admin: Hiển thị danh sách danh mục phẳng

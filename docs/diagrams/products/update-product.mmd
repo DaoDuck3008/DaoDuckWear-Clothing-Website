@@ -1,0 +1,35 @@
+%%{init: {'themeVariables': {'fontSize': '25px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(ProductsController + ProductsService)
+    participant Cloudinary
+    participant Products as MongoDB (products)
+    participant Variants as MongoDB (product_variants)
+    participant Redis
+
+    Admin->>FE: Chỉnh sửa thông tin + upload ảnh mới (tuỳ chọn)
+    FE->>BE: PATCH /products/:id (multipart/form-data)
+
+    BE->>Products: Tìm product theo id
+
+    alt Sản phẩm không tồn tại
+        Products-->>BE: null
+        BE-->>FE: 404 Không tìm thấy sản phẩm
+        FE-->>Admin: Hiển thị lỗi
+    else Tồn tại
+        Products-->>BE: product document
+        BE->>BE: Generate slug mới (nếu đổi tên)
+        BE->>BE: Lọc bỏ ảnh đã xoá (theo deleteImageIds)
+        BE->>Cloudinary: Upload ảnh mới lên Cloud (nếu có) 
+        Cloudinary-->>BE: imageUrls[] mới
+        BE->>BE: Bắt đầu MongoDB transaction
+        BE->>Products: Cập nhật product document
+        BE->>Variants: Đồng bộ variants (soft-delete / update / tạo mới)
+        BE->>BE: Commit transaction
+        BE->>Redis: Xoá cache slug cũ + slug mới
+        Note over BE,Redis: Cần xoá cả 2 slug vì tên sản phẩm có thể đã thay đổi
+        BE-->>FE: 200 { newSlug }
+        FE-->>Admin: Cập nhật thành công
+    end

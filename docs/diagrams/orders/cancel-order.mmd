@@ -1,0 +1,29 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(OrdersController + OrdersService)
+    participant Orders as MongoDB (orders)
+    participant Inventories as MongoDB (inventories)
+
+    Customer->>FE: Yêu cầu huỷ đơn hàng
+    FE->>BE: PATCH /orders/:id/cancel
+
+    BE->>Orders: Tìm order theo id
+
+    alt Không tìm thấy / Không phải chủ đơn hàng
+        Orders-->>BE: null hoặc khác userId
+        BE-->>FE: 404 / 403 Lỗi truy cập
+        FE-->>Customer: Hiển thị lỗi
+    else Trạng thái không cho phép huỷ (không phải PENDING / CONFIRMED)
+        Orders-->>BE: order với status không hợp lệ
+        BE-->>FE: 400 Không thể huỷ đơn ở trạng thái hiện tại
+        FE-->>Customer: Hiển thị lỗi
+    else Hợp lệ
+        Orders-->>BE: order document
+        BE->>Inventories: reservedQuantity -= quantity (từng variant)
+        BE->>Orders: status = CANCELLED
+        BE-->>FE: 200 Huỷ đơn thành công
+        FE-->>Customer: Thông báo huỷ thành công
+    end

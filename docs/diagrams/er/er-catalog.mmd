@@ -1,0 +1,38 @@
+erDiagram
+    CATEGORY {
+        ObjectId _id
+        string   name
+        string   slug
+        ObjectId parentId "nullable — tự tham chiếu"
+    }
+
+    PRODUCT {
+        ObjectId _id
+        string   name
+        string   slug
+        number   basePrice
+        string   status     "active / inactive"
+        ObjectId categoryId "nullable"
+    }
+
+    PRODUCT_VARIANT {
+        ObjectId _id
+        ObjectId productId
+        string   sku
+        string   size       "nullable"
+        string   color      "nullable"
+        number   price      "nullable"
+        ObjectId colorHexId "nullable"
+    }
+
+    COLOR {
+        ObjectId _id
+        string   name
+        string   hexCode
+        string   slug
+    }
+
+    CATEGORY        ||--o{ CATEGORY        : "parent of"
+    CATEGORY        ||--o{ PRODUCT         : "categorizes"
+    PRODUCT         ||--|{ PRODUCT_VARIANT : "has"
+    COLOR           ||--o{ PRODUCT_VARIANT : "defines color"

@@ -1,0 +1,37 @@
+%%{init: {'themeVariables': {'fontSize': '25px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(CategoriesController + CategoriesService)
+    participant Categories as MongoDB (categories)
+    participant Redis
+
+    Admin->>FE: Chỉnh sửa danh mục
+    FE->>BE: PATCH /categories/:id { name?, parentId? }
+
+    BE->>Categories: Tìm category theo id (deletedAt: null)
+
+    alt Không tìm thấy
+        Categories-->>BE: null
+        BE-->>FE: 404 Không tìm thấy danh mục
+        FE-->>Admin: Hiển thị lỗi
+    else Hợp lệ
+        Categories-->>BE: category document
+        opt Thay đổi name
+            BE->>BE: Generate slug mới từ name mới
+            BE->>Categories: Kiểm tra slug mới chưa tồn tại 
+        Note over BE, Categories: Slug là tên tiếng Việt không dấu phục vụ SEO
+        end
+        opt Thay đổi parentId
+            BE->>Categories: Tìm kiếm và kiểm tra parent mới (tồn tại, không phải chính nó, chưa có parent)
+        end
+        break Slug trùng / Circular reference / Parent không hợp lệ
+            BE-->>FE: 400 / 404 Lỗi validation
+            FE-->>Admin: Hiển thị lỗi
+        end
+        BE->>Categories: $set { name, slug, parentId }
+        BE->>Redis: Xóa cây dữ liệu category được lưu trong Cache
+        BE-->>FE: 200 Cập nhật danh mục thành công
+        FE-->>Admin: Thông báo cập nhật thành công
+    end

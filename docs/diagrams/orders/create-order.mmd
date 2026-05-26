@@ -1,0 +1,39 @@
+%%{init: {'themeVariables': {'fontSize': '25px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(OrdersController + OrdersService)
+    participant Variants as MongoDB (product_variants)
+    participant Inventories as MongoDB (inventories)
+    participant Vouchers as MongoDB (vouchers)
+    participant Orders as MongoDB (orders)
+    participant Cart as MongoDB (carts)
+
+    Customer->>FE: Xác nhận đặt hàng (sản phẩm, địa chỉ, voucher?)
+    FE->>BE: POST /orders { items[], shippingAddress, voucherCode? }
+
+    BE->>Variants: Kiểm tra từng variant (tồn tại, còn active)
+    BE->>Inventories: Kiểm tra tồn kho từng variant
+
+    opt Có voucherCode
+        BE->>Vouchers: Validate voucher (còn hạn, đủ điều kiện áp dụng)
+    end
+
+    alt Variant không hợp lệ / Không đủ tồn kho / Voucher không hợp lệ
+        BE-->>FE: 400 Lỗi validation
+        FE-->>Customer: Hiển thị lỗi
+    else Hợp lệ
+        BE->>BE: Bắt đầu MongoDB transaction
+        BE->>Inventories: reservedQuantity += quantity (từng variant)
+        Note over BE,Inventories: Người mua mới đặt hàng, SP chưa được giao phải lưu quantity ảo<br/>tránh trường hợp người mua khác đặt mất. Trừ khi giao hàng thành công mới trừ 
+        opt Có voucher
+            BE->>Vouchers: usedCount++
+        end
+        BE->>Orders: Tạo order document (snapshot thông tin sản phẩm)
+        Note over BE,Orders: Snapshot là dữ liệu về giá, tên, ảnh của SP tại thời điểm đặt hàng <br/> để không bị ảnh hưởng khi sản phẩm được cập nhật sau này
+        BE->>Cart: Xoá items đã đặt khỏi giỏ hàng
+        BE->>BE: Commit transaction
+        BE-->>FE: 201 { order }
+        FE-->>Customer: Hiển thị trang xác nhận đơn hàng
+    end

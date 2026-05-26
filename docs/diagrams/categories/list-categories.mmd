@@ -1,0 +1,27 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor User
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(CategoriesController + CategoriesService)
+    participant Redis
+    participant Categories as MongoDB (categories)
+
+    User->>FE: Truy cập trang có danh mục
+    FE->>BE: GET /categories
+
+    BE->>Redis: GET cats:tree
+
+    alt Cache hit
+        Redis-->>BE: Dữ liệu đã cache
+        BE-->>FE: 200 { tree[] } (từ cache)
+    else Cache miss
+        Redis-->>BE: null
+        BE->>Categories: Query tất cả danh mục (deletedAt: null), sort by name
+        Categories-->>BE: categories[]
+        BE->>BE: buildTree() — nhóm thành cây parent → children
+        BE->>Redis: SET cats:tree (TTL 1 giờ)
+        BE-->>FE: 200 { tree[] }
+    end
+
+    FE-->>User: Hiển thị danh mục

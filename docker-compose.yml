@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7
+    container_name: daoduckwear_clothing_redis
+    restart: always
+    command: >
+      redis-server 
+      --requirepass 123456 
+      --appendonly yes
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lfu
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend_network
+
+volumes:
+  redis_data:
+
+networks:
+  backend_network:

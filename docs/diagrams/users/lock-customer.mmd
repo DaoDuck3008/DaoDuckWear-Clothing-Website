@@ -1,0 +1,25 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(UsersController + UsersService)
+    participant Roles as MongoDB (roles)
+    participant Users as MongoDB (users)
+
+    Admin->>FE: Khoá hoặc mở khoá tài khoản khách hàng
+    FE->>BE: PATCH /customers/:id/lock hoặc /unlock
+
+    BE->>Roles: Lấy roleId của role USER
+    BE->>Users: Tìm customer theo id và roleId USER (deletedAt: null)
+
+    alt Không tìm thấy
+        Users-->>BE: null
+        BE-->>FE: 404 Không tìm thấy khách hàng
+        FE-->>Admin: Hiển thị lỗi
+    else Hợp lệ
+        Users-->>BE: customer document
+        BE->>Users: $set { isLocked: true / false }
+        BE-->>FE: 200 { customer }
+        FE-->>Admin: Thông báo thay đổi trạng thái thành công
+    end

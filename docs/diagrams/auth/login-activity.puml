@@ -1,0 +1,47 @@
+@startuml
+skinparam backgroundColor White
+skinparam swimlaneWidth 300
+skinparam activityFontSize 13
+skinparam activityBorderColor #555555
+skinparam activityBackgroundColor #EBF2FF
+skinparam swimlaneBorderColor #888888
+skinparam arrowColor #555555
+
+|Customer|
+start
+:Điền email + password + rememberMe\nvà nhấn Đăng nhập;
+
+|Hệ thống|
+:Xác thực thông tin đăng nhập\n(email, mật khẩu, trạng thái tài khoản, quyền);
+
+if (Thông tin không hợp lệ?) then (có)
+  #FFDDDD:Trả về lỗi tương ứng\n(404 / 401 / 403);
+  note left
+    **404**: Tài khoản không tồn tại
+    **401**: Sai mật khẩu
+    **403**: Tài khoản bị khóa hoặc không có quyền
+  end note
+  |Customer|
+  #FFDDDD:Xem thông báo lỗi;
+  stop
+else (không)
+endif
+
+|Hệ thống|
+:Tạo phiên đăng nhập\n(access token + refresh token);
+note left
+  **access_token** — JWT ngắn hạn (TTL 15 phút).
+  Gửi kèm trong header Authorization của mỗi request
+  để hệ thống xác nhận danh tính người dùng.
+  ----
+  **refresh_token** — Token dài hạn (TTL 7 ngày).
+  Lưu trong httpOnly cookie. 
+  Dùng để cấp access_token mới khi hết hạn 
+  mà không bắt người dùng đăng nhập lại.
+end note
+
+|Customer|
+:Được chuyển về trang chủ;
+stop
+
+@enduml

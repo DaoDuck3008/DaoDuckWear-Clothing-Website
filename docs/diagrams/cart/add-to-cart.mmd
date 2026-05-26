@@ -1,0 +1,33 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(CartController + CartService)
+    participant Variants as MongoDB (product_variants)
+    participant Inventories as MongoDB (inventories)
+    participant Cart as MongoDB (carts)
+
+    Customer->>FE: Click "Thêm vào giỏ" (variant, quantity, shop)
+    FE->>BE: POST /cart { variantId, quantity, shopId }
+
+    BE->>Cart: ensureCart(userId) — lấy hoặc tạo giỏ hàng
+    BE->>Variants: Kiểm tra variant tồn tại
+    BE->>Inventories: Kiểm tra tồn kho tại shop (stock - reservedQuantity)
+    Note over Variants: Stock là tồn kho thực tế của SP. <br/> ReservedQuantity là số lượng SP đã được người khác đặt hàng nhưng chưa giao
+
+    alt Variant không tồn tại
+        BE-->>FE: 404 Variant không tìm thấy
+        FE-->>Customer: Hiển thị lỗi
+    else Sản phẩm không có trong shop hoặc không đủ tồn kho
+        BE-->>FE: 400 PRODUCT_NOT_FOUND_IN_SHOP / OUT_OF_STOCK
+        FE-->>Customer: Hiển thị lỗi
+    else Variant đã có trong giỏ (cùng shopId)
+        BE->>Cart: item.quantity += quantity
+        BE-->>FE: 200 { cart }
+        FE-->>Customer: Cập nhật giỏ hàng
+    else Chưa có trong giỏ
+        BE->>Cart: items.push({ variantId, quantity, shopId })
+        BE-->>FE: 200 { cart }
+        FE-->>Customer: Cập nhật giỏ hàng
+    end
