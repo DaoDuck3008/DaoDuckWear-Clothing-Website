@@ -1,0 +1,22 @@
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { User, UserSchema } from '../users/schemas/user.schema';
+import { Role, RoleSchema } from '../roles/schemas/role.schema';
+import { MailModule } from '../mail/mail.module';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module';
+
+@Module({
+  imports: [
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: Role.name, schema: RoleSchema },
+    ]),
+    MailModule,
+    AuditLogsModule,
+  ],
+  controllers: [AuthController],
+  providers: [AuthService],
+})
+export class AuthModule {}
