@@ -1,0 +1,25 @@
+%%{init: {'themeVariables': {'fontSize': '22px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin as Quan tri vien
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(VouchersController + VouchersService)
+    participant Vouchers as MongoDB (vouchers)
+
+    Note over Admin,Vouchers: DELETE — DELETE /vouchers/:id (chi Admin, soft delete)
+    Admin->>FE: Xac nhan xoa voucher
+    FE->>BE: DELETE /vouchers/:id
+    BE->>Vouchers: findOne({ _id: id, deletedAt: null })
+
+    alt Voucher khong ton tai hoac da bi xoa
+        Vouchers-->>BE: null
+        BE-->>FE: 404 Voucher khong ton tai
+        FE-->>Admin: Hien thi loi
+    else Tim thay
+        Vouchers-->>BE: voucher document
+        BE->>BE: voucher.deletedAt = new Date()
+        BE->>Vouchers: voucher.save()
+        Note over BE,Vouchers: Soft delete — ban ghi van ton tai trong DB<br/>Chi bi loc ra boi query { deletedAt: null }<br/>Co the khoi phuc neu can, khong mat du lieu
+        BE-->>FE: 200 Xoa voucher thanh cong
+        FE-->>Admin: Xoa thanh cong
+    end

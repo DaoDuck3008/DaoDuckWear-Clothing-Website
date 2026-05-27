@@ -1,0 +1,26 @@
+%%{init: {'themeVariables': {'fontSize': '22px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin as Quan tri vien
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(VouchersController + VouchersService)
+    participant Vouchers as MongoDB (vouchers)
+
+    Note over Admin,Vouchers: UPDATE — PATCH /vouchers/:id (chi Admin)
+    Admin->>FE: Sua thong tin voucher
+    FE->>BE: PATCH /vouchers/:id { discountValue, expiredAt, usageLimit, ... }
+    BE->>Vouchers: findOne({ _id: id, deletedAt: null })
+
+    alt Voucher khong ton tai hoac da bi xoa
+        Vouchers-->>BE: null
+        BE-->>FE: 404 Voucher khong ton tai
+        FE-->>Admin: Hien thi loi
+    else Tim thay
+        Vouchers-->>BE: voucher document
+        BE->>BE: Object.assign(voucher, updateData)
+        Note over BE: Neu expiredAt duoc truyen vao —<br/>chuyen tu ISO string sang Date object truoc khi luu
+        BE->>Vouchers: voucher.save()
+        Vouchers-->>BE: voucher da cap nhat
+        BE-->>FE: 200 { voucher }
+        FE-->>Admin: Cap nhat thanh cong
+    end

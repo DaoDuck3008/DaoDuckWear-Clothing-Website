@@ -49,7 +49,8 @@
       "Bash(move \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth-login.mmd\" \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth\\\\login.mmd\")",
       "Bash(move \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth-login.md\" \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth\\\\login.md\")",
       "Bash(move \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth-register.mmd\" \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth\\\\register.mmd\")",
-      "Bash(move \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth-register.md\" \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth\\\\register.md\")"
+      "Bash(move \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth-register.md\" \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth\\\\register.md\")",
+      "PowerShell(New-Item *)"
     ]
   }
 }

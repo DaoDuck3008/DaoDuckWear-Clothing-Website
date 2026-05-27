@@ -1,0 +1,17 @@
+%%{init: {'themeVariables': {'fontSize': '22px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin as Quan tri vien
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(VouchersController + VouchersService)
+    participant Vouchers as MongoDB (vouchers)
+
+    Note over Admin,Vouchers: LIST — GET /vouchers (chi Admin)
+    Admin->>FE: Chon bo loc: trang thai, tu khoa, trang
+    FE->>BE: GET /vouchers?status=ACTIVE&search=SALE&page=1&limit=20
+    Note over BE: status co the la:<br/>ACTIVE  — chua het han + con luot dung<br/>EXPIRED — expiredAt <= now<br/>USED_UP — usedCount >= usageLimit<br/>DELETED — deletedAt != null
+    BE->>Vouchers: find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit)
+    BE->>Vouchers: countDocuments(filter)
+    Vouchers-->>BE: [data], total
+    BE-->>FE: 200 { data, page, totalPages, totalItems }
+    FE-->>Admin: Hien thi danh sach voucher

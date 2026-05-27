@@ -1,0 +1,26 @@
+%%{init: {'themeVariables': {'fontSize': '22px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Admin as Quan tri vien
+    participant FE as Frontend<br/>(Next.js)
+    participant BE as Backend<br/>(VouchersController + VouchersService)
+    participant Vouchers as MongoDB (vouchers)
+
+    Note over Admin,Vouchers: CREATE — POST /vouchers (chi Admin)
+    Admin->>FE: Nhap thong tin voucher
+    FE->>BE: POST /vouchers { code, discountType, discountValue,<br/>minOrderValue, maxDiscountAmount, usageLimit, expiredAt }
+    BE->>Vouchers: findOne({ code, deletedAt: null })
+
+    alt Ma voucher da ton tai
+        Vouchers-->>BE: voucher document
+        BE-->>FE: 409 Ma voucher da ton tai
+        FE-->>Admin: Hien thi loi
+    else Chua ton tai
+        Vouchers-->>BE: null
+        BE->>BE: code.toUpperCase().trim()
+        Note over BE: Chuan hoa ma truoc khi luu —<br/>dam bao dong nhat, tranh trung lap do hoa thuong/thuong
+        BE->>Vouchers: create({ code, discountType, discountValue,<br/>minOrderValue, maxDiscountAmount, usageLimit, expiredAt })
+        Vouchers-->>BE: voucher moi
+        BE-->>FE: 201 { voucher }
+        FE-->>Admin: Tao voucher thanh cong
+    end
