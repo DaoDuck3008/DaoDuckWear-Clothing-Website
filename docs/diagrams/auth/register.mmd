@@ -1,4 +1,32 @@
-%%{init: {'themeVariables': {'fontSize': '25px'}}}%%
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'fontSize': '25px',
+    'background': '#1e1e2e',
+    'primaryColor': '#313244',
+    'primaryTextColor': '#cdd6f4',
+    'primaryBorderColor': '#89b4fa',
+    'secondaryColor': '#2a2a3e',
+    'tertiaryColor': '#2a2a3e',
+    'noteBkgColor': '#45475a',
+    'noteTextColor': '#cdd6f4',
+    'noteBorderColor': '#6c7086',
+    'activationBkgColor': '#585b70',
+    'activationBorderColor': '#89b4fa',
+    'textColor': '#cdd6f4',
+    'signalColor': '#89b4fa',
+    'signalTextColor': '#cdd6f4',
+    'actorBkg': '#313244',
+    'actorBorder': '#89b4fa',
+    'actorTextColor': '#cdd6f4',
+    'actorLineColor': '#6c7086',
+    'loopTextColor': '#cdd6f4',
+    'labelBoxBkgColor': '#313244',
+    'labelBoxBorderColor': '#89b4fa',
+    'labelTextColor': '#cdd6f4',
+    'sequenceNumberColor': '#1e1e2e'
+  }
+}}%%
 sequenceDiagram
     autonumber
     actor User as Nguoi dung
@@ -9,7 +37,7 @@ sequenceDiagram
     participant Redis
     participant Mail as MailService
 
-    rect rgb(235, 242, 255)
+    rect rgb(25, 45, 90)
         Note over User,Mail: Giai đoạn 1 — Đăng ký tài khoản
         User->>FE: Nhập email + username + password
         FE->>BE: POST /auth/register { email, username, password }
@@ -40,7 +68,7 @@ sequenceDiagram
         end
     end
 
-    rect rgb(255, 235, 235)
+    rect rgb(70, 20, 30)
         Note over User,Mail: Giai đoạn 2 — Xác thực email (chỉ khi IS_VERIFY_EMAIL = true)
         User->>FE: Nhập mã OTP từ email
         FE->>BE: POST /auth/verify-email { email, code }
