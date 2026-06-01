@@ -32,6 +32,7 @@ const ROLE_BADGE: Record<StaffRole, string> = {
   ADMIN: "bg-rose-50 text-rose-700 border-rose-200",
   MANAGER: "bg-indigo-50 text-indigo-700 border-indigo-200",
   STAFF: "bg-stone-100 text-stone-700 border-stone-200",
+  RECEPTIONIST: "bg-amber-50 text-amber-700 border-amber-200",
 };
 
 const EMPLOYMENT_BADGE: Record<StaffEmploymentStatus, string> = {

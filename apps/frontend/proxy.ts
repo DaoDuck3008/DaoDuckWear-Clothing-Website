@@ -4,6 +4,8 @@ import type { NextRequest } from "next/server";
 export function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+  // WebSocket (Socket.io) dùng scheme ws/wss — connect-src không suy ra từ http/https
+  const wsUrl = apiUrl.replace(/^http/, "ws");
   const isDev = process.env.NEXT_PUBLIC_NODE_ENV !== "production";
 
   // 'strict-dynamic' cho phép script được load bởi script trusted (ví dụ Next.js runtime)
@@ -18,7 +20,7 @@ export function proxy(request: NextRequest) {
     `script-src ${scriptSrc}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https://res.cloudinary.com https://lh3.googleusercontent.com",
-    `connect-src 'self' ${apiUrl} https://accounts.google.com https://provinces.open-api.vn`,
+    `connect-src 'self' ${apiUrl} ${wsUrl} https://accounts.google.com https://provinces.open-api.vn`,
     "font-src 'self'",
     "frame-src https://accounts.google.com https://www.google.com",
     "object-src 'none'",

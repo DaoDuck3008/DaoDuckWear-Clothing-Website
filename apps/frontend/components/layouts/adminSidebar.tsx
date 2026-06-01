@@ -18,12 +18,13 @@ import {
   ImagePlay,
   Ticket,
   ScrollText,
+  MessageSquare,
   X,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useAuthStore } from "@/stores/auth.store";
 
-type AdminRole = "ADMIN" | "MANAGER" | "STAFF";
+type AdminRole = "ADMIN" | "MANAGER" | "STAFF" | "RECEPTIONIST";
 
 interface MenuItem {
   title: string;
@@ -71,6 +72,12 @@ const menuItems: MenuItem[] = [
     title: "Quản lý đơn hàng",
     icon: ClipboardList,
     href: "/admin/orders",
+  },
+  {
+    title: "Tin nhắn",
+    icon: MessageSquare,
+    href: "/admin/messages",
+    allowedRoles: ["MANAGER", "RECEPTIONIST"],
   },
   {
     title: "Quản lý Voucher",

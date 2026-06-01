@@ -9,7 +9,7 @@ export default function AdminLayout({
 }) {
   return (
     <AuthGuard>
-      <RoleGuard allowedRoles={["ADMIN", "STAFF", "MANAGER"]}>
+      <RoleGuard allowedRoles={["ADMIN", "STAFF", "MANAGER", "RECEPTIONIST"]}>
         <AdminLayoutClient>{children}</AdminLayoutClient>
       </RoleGuard>
     </AuthGuard>

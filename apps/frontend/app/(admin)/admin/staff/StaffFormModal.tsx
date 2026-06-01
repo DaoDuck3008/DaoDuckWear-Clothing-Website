@@ -105,6 +105,7 @@ export function StaffFormModal({
     { value: "ADMIN", label: "ADMIN" },
     { value: "MANAGER", label: "MANAGER" },
     { value: "STAFF", label: "STAFF" },
+    { value: "RECEPTIONIST", label: "RECEPTIONIST" },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
