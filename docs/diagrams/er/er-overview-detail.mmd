@@ -1,0 +1,171 @@
+erDiagram
+    ROLE {
+        string name
+    }
+
+    USER {
+        string username
+        string email
+        string password
+        enum provider
+        string avatar
+        ObjectId roleId
+        ObjectId shopId
+        boolean isVerified
+        boolean isLocked
+        enum gender
+    }
+
+    SHOP {
+        string name
+        string slug
+        number wardCode
+        number cityCode
+    }
+
+    CATEGORY {
+        string name
+        string slug
+        ObjectId parentId
+    }
+
+    COLOR {
+        string name
+        string slug
+        string hexCode
+    }
+
+    PRODUCT {
+        string name
+        string slug
+        number basePrice
+        ObjectId categoryId
+        string status
+        array images
+    }
+
+    PRODUCT_VARIANT {
+        ObjectId productId
+        string size
+        string color
+        ObjectId colorHexId
+        string sku
+        number price
+    }
+
+    INVENTORY {
+        ObjectId shopId
+        ObjectId productId
+        ObjectId variantId
+        number quantity
+        number reservedQuantity
+    }
+
+    INVENTORY_IMPORT {
+        ObjectId shopId
+        ObjectId productId
+        ObjectId createdBy
+        array items
+        number totalQuantity
+        enum status
+    }
+
+    CART {
+        ObjectId userId
+        array items
+    }
+
+    VOUCHER {
+        string code
+        enum discountType
+        number discountValue
+        number minOrderValue
+        number maxDiscountAmount
+        number usageLimit
+        number usedCount
+        Date expiredAt
+    }
+
+    ORDER {
+        string orderCode
+        ObjectId userId
+        object shippingAddress
+        array items
+        number totalAmount
+        number discountAmount
+        number finalTotal
+        enum status
+        enum paymentMethod
+        enum paymentStatus
+        Date paidAt
+    }
+
+    PAYMENT {
+        ObjectId orderId
+        string method
+        number amount
+        enum status
+        string transactionId
+    }
+
+    REVIEW {
+        ObjectId userId
+        ObjectId productId
+        number rating
+        string comment
+    }
+
+    FAVORITE {
+        ObjectId userId
+        ObjectId productId
+    }
+
+    POST {
+        string title
+        string slug
+        string content
+        ObjectId authorId
+    }
+
+    AUDIT_LOG {
+        ObjectId userId
+        string action
+        string entityName
+        ObjectId entityId
+        object oldData
+        object newData
+    }
+
+    BANNER {
+        string title
+        string imageUrl
+        string page
+        string position
+        boolean isActive
+        Date startAt
+        Date endAt
+    }
+
+    ROLE             ||--o{ USER             : "assigned to"
+    SHOP             ||--o{ USER             : "employs"
+    CATEGORY         ||--o{ CATEGORY         : "parent of"
+    CATEGORY         ||--o{ PRODUCT          : "categorizes"
+    COLOR            ||--o{ PRODUCT_VARIANT  : "defines color"
+    PRODUCT          ||--|{ PRODUCT_VARIANT  : "has"
+    PRODUCT          ||--o{ INVENTORY        : "tracked in"
+    PRODUCT_VARIANT  ||--|| INVENTORY        : "stocked as"
+    SHOP             ||--o{ INVENTORY        : "stocks"
+    SHOP             ||--o{ INVENTORY_IMPORT : "receives"
+    PRODUCT          ||--o{ INVENTORY_IMPORT : "imported via"
+    USER             ||--o{ INVENTORY_IMPORT : "creates"
+    USER             ||--o{ ORDER            : "places"
+    USER             ||--o| CART             : "has"
+    USER             }o--o{ VOUCHER          : "uses"
+    VOUCHER          ||--o{ ORDER            : "applied to"
+    ORDER            ||--|| PAYMENT          : "paid via"
+    USER             ||--o{ REVIEW           : "writes"
+    PRODUCT          ||--o{ REVIEW           : "reviewed in"
+    USER             ||--o{ FAVORITE         : "saves"
+    PRODUCT          ||--o{ FAVORITE         : "favorited as"
+    USER             ||--o{ POST             : "authors"
+    USER             ||--o{ AUDIT_LOG        : "recorded by"

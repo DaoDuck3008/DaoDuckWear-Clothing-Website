@@ -1,0 +1,28 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+flowchart LR
+    Browser([Trình duyệt])
+
+    FE["Next.js :3000"<br/>+ Zustand Store]
+
+    BE["NestJS :5000<br/>+ Background Jobs"]
+
+    subgraph Data["Data Layer"]
+        direction TB
+        MongoDB[(MongoDB)]
+        Redis[(Redis :6380)]
+    end
+
+    subgraph Ext["External Services"]
+        direction TB
+        Cloudinary["Cloudinary<br/>CDN Images"]
+        GoogleOAuth["Google OAuth 2.0"]
+        SMTP["SMTP Mail"]
+    end
+
+    Browser <-->|HTTPS| FE
+    FE <-->|REST API + JWT| BE
+    BE <-->|Mongoose ODM| MongoDB
+    BE <-->|cache / sessions / OTP| Redis
+    BE -->|upload / delete| Cloudinary
+    BE -->|verify token| GoogleOAuth
+    BE -->|transactional email| SMTP
