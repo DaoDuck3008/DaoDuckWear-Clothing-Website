@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
   const isDev = process.env.NEXT_PUBLIC_NODE_ENV !== "production";
@@ -20,7 +20,7 @@ export function middleware(request: NextRequest) {
     "img-src 'self' data: https://res.cloudinary.com https://lh3.googleusercontent.com",
     `connect-src 'self' ${apiUrl} https://accounts.google.com https://provinces.open-api.vn`,
     "font-src 'self'",
-    "frame-src https://accounts.google.com",
+    "frame-src https://accounts.google.com https://www.google.com",
     "object-src 'none'",
   ].join("; ");
 
@@ -38,7 +38,7 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      // Chỉ chạy middleware cho page requests — bỏ qua static assets và image optimization
+      // Chỉ chạy proxy cho page requests — bỏ qua static assets và image optimization
       source: "/((?!api|_next/static|_next/image|favicon.ico).*)",
       missing: [
         { type: "header", key: "next-action" },
