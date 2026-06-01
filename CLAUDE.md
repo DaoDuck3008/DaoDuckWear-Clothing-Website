@@ -104,6 +104,7 @@ Skills are detailed reference files stored in `.claude/skills/`. Load them befor
 | **backend › redis** | `.claude/skills/backend/skill-redis.md` | Working on Redis, caching (`cacheable`, `delByPrefix`), TTL data (OTP, reset code), or cache invalidation — load alongside `backend` |
 | **next** | `.claude/skills/next/SKILL.md` | Creating/editing any `.tsx` page, component, or layout in `apps/frontend/` |
 | **diagrams** | `.claude/skills/diagrams/SKILL.md` | Creating/editing any `.mmd`, `.md` in `docs/diagrams/`, or any task mentioning: diagram, sequence, mermaid, flowchart, ER diagram |
+| **git** | `.claude/skills/git/SKILL.md` | Any git commit or push — writing commit messages, staging, or subtree-pushing to the backend/frontend sub-repos |
 
 ### Trigger Rules
 
@@ -112,6 +113,7 @@ Skills are detailed reference files stored in `.claude/skills/`. Load them befor
 - **Redis/cache task** (caching, `cacheable`, invalidation, TTL data like OTP, anything touching `RedisService`) → load both `backend/SKILL.md` AND `backend/skill-redis.md`.
 - **Frontend task** (page, component, layout, UI) → load `next/SKILL.md` first.
 - **Diagram task** (tạo/chỉnh sửa `.mmd`, `.md` trong `docs/diagrams/`, hoặc từ khóa: diagram, sequence, mermaid, flowchart, ER) → load `diagrams/SKILL.md` first.
+- **Git/commit task** (commit, "commit giúp tôi", viết commit message, push, subtree) → load `git/SKILL.md` first.
 - **Full-stack task** → load all relevant skills before starting.
 
 ### Adding a New Skill
