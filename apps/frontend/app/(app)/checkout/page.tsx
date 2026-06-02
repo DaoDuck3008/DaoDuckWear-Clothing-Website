@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ChevronLeft,
-  CreditCard,
   Truck,
   ShoppingBag,
   Loader2,
@@ -18,6 +17,7 @@ import { useBuyNowStore } from "@/stores/buy-now.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { cn } from "@/utils/cn";
 import { orderApi } from "@/apis/order.api";
+import { paymentApi } from "@/apis/payment.api";
 import { voucherApi } from "@/apis/voucher.api";
 import { getProfile } from "@/apis/auth.api";
 import { toast } from "react-toastify";
@@ -46,6 +46,7 @@ export default function CheckoutPage() {
   const [mounted, setMounted] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,6 +71,19 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Khi bấm Back từ trang VNPay, trình duyệt có thể khôi phục trang này từ bfcache
+  // với state cũ (isRedirecting=true) → kẹt ở LoadingLayer. Reset cờ khi đó.
+  useEffect(() => {
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        setIsRedirecting(false);
+        setIsSubmitting(false);
+      }
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
   }, []);
 
   useEffect(() => {
@@ -98,7 +112,14 @@ export default function CheckoutPage() {
   if (!mounted) return null;
 
   // Render Empty State if no items
-  if (hydrated && !isPageLoading && !isSuccess && displayItems.length === 0) {
+  // Bỏ qua khi đang redirect sang VNPay (giỏ đã được clear sau khi tạo đơn) — hiển thị LoadingLayer thay thế
+  if (
+    hydrated &&
+    !isPageLoading &&
+    !isSuccess &&
+    !isRedirecting &&
+    displayItems.length === 0
+  ) {
     return (
       <StatusModal
         isOpen={displayItems.length === 0}
@@ -208,15 +229,30 @@ export default function CheckoutPage() {
         orderPayload.voucherCode = appliedVoucher.code;
       }
 
-      await orderApi.createOrder(orderPayload);
-      setIsSuccess(true);
-      
+      const orderRes = await orderApi.createOrder(orderPayload);
+      const createdOrder = orderRes.data;
+
+      if (formData.paymentMethod === "VNPAY") {
+        // Bật cờ redirect TRƯỚC khi clear giỏ để LoadingLayer hiện thay vì modal "Giỏ hàng trống"
+        setIsRedirecting(true);
+        if (isBuyNow) {
+          clearBuyNowItem();
+        } else {
+          clearCart();
+        }
+        const vnpRes = await paymentApi.createVnpayUrl(createdOrder.id);
+        window.location.href = vnpRes.data.paymentUrl;
+        return;
+      }
+
       if (isBuyNow) {
         clearBuyNowItem();
       } else {
         clearCart();
       }
+      setIsSuccess(true);
     } catch (err: any) {
+      setIsRedirecting(false);
       setError(
         err.response?.data?.message ||
           "Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.",
@@ -226,9 +262,16 @@ export default function CheckoutPage() {
     }
   };
 
-  if (isSubmitting) {
+  if (isSubmitting || isRedirecting) {
     return (
-      <LoadingLayer isLoading={isSubmitting} message="Đang xử lý đơn hàng..." />
+      <LoadingLayer
+        isLoading
+        message={
+          isRedirecting
+            ? "Đang chuyển đến cổng thanh toán VNPay..."
+            : "Đang xử lý đơn hàng..."
+        }
+      />
     );
   }
 
@@ -402,26 +445,25 @@ export default function CheckoutPage() {
 
                   <button
                     onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        paymentMethod: "BANK_TRANSFER",
-                      }))
+                      setFormData((prev) => ({ ...prev, paymentMethod: "VNPAY" }))
                     }
                     className={cn(
                       "p-6 border text-left transition-all relative group",
-                      formData.paymentMethod === "BANK_TRANSFER"
+                      formData.paymentMethod === "VNPAY"
                         ? "border-black bg-white"
                         : "border-stone-100 bg-stone-50 opacity-60",
                     )}
                   >
-                    <CreditCard className="w-5 h-5 mb-4" />
+                    <div className="w-5 h-5 mb-4 flex items-center justify-center">
+                      <span className="text-[10px] font-black text-blue-700 leading-none">VNPay</span>
+                    </div>
                     <div className="text-xs font-bold uppercase tracking-widest">
-                      Chuyển khoản
+                      VNPay
                     </div>
                     <div className="text-[10px] text-stone-400 mt-1">
-                      Qua ngân hàng / Ví điện tử
+                      Cổng thanh toán trực tuyến
                     </div>
-                    {formData.paymentMethod === "BANK_TRANSFER" && (
+                    {formData.paymentMethod === "VNPAY" && (
                       <div className="absolute top-4 right-4 w-2 h-2 bg-black rounded-full" />
                     )}
                   </button>

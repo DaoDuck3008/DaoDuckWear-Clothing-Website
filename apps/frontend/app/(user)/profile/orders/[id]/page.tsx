@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { orderApi } from "@/apis/order.api";
+import { paymentApi } from "@/apis/payment.api";
 import { toast } from "react-toastify";
 import {
   ArrowLeft,
@@ -56,6 +57,18 @@ export default function OrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [isConfirming, setIsConfirming] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
+
+  const handleRepayVnpay = async () => {
+    setIsPaying(true);
+    try {
+      const res = await paymentApi.createVnpayUrl(id as string);
+      window.location.href = res.data.paymentUrl;
+    } catch (err) {
+      handleApiError(err, "Không thể tạo lại liên kết thanh toán");
+      setIsPaying(false);
+    }
+  };
 
   const handleConfirmReceipt = async () => {
     setIsConfirming(true);
@@ -410,6 +423,24 @@ export default function OrderDetailPage() {
                     : "Chưa thanh toán"}
                 </span>
               </div>
+
+              {/* Thanh toán lại — chỉ với đơn VNPAY chưa thanh toán & còn chờ xử lý */}
+              {order.paymentMethod === "VNPAY" &&
+                order.paymentStatus !== "PAID" &&
+                order.status === "PENDING" && (
+                  <button
+                    onClick={handleRepayVnpay}
+                    disabled={isPaying}
+                    className="w-full mt-2 inline-flex items-center justify-center gap-2 bg-black text-white px-6 py-3 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-stone-800 transition-all disabled:opacity-50"
+                  >
+                    {isPaying ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <CreditCard className="w-3.5 h-3.5" />
+                    )}
+                    Thanh toán lại
+                  </button>
+                )}
             </div>
 
             {/* Support */}
