@@ -6,7 +6,7 @@ import { cn } from "@/utils/cn";
 import ModalPortal from "../ui/modalPortal";
 import { useAuthStore } from "@/stores/auth.store";
 import { useChatStore } from "@/stores/chat.store";
-import { isShopRole, isChatStaffRole } from "@/constants/role";
+import { isShopRole } from "@/constants/role";
 import { shopApi } from "@/apis/shop.api";
 import Link from "next/link";
 
@@ -148,7 +148,10 @@ export default function ChatPopup() {
                 </button>
               )}
               <div className="flex-1 min-w-0">
-                <h2 className="font-cormorant text-lg font-bold tracking-wide truncate">
+                <h2
+                  title={headerTitle}
+                  className="font-cormorant text-lg font-bold tracking-wide truncate"
+                >
                   {headerTitle}
                 </h2>
                 <p className="text-[9px] uppercase tracking-[0.2em] text-white/60">
@@ -174,7 +177,7 @@ export default function ChatPopup() {
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
-                  className="bg-black text-white px-6 py-3 text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-stone-800 transition-all"
+                  className="bg-black text-white rounded-lg px-6 py-3 text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-stone-800 transition-all"
                 >
                   Đăng nhập
                 </Link>
