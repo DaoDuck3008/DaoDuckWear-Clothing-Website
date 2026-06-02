@@ -50,7 +50,10 @@
       "Bash(move \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth-login.md\" \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth\\\\login.md\")",
       "Bash(move \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth-register.mmd\" \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth\\\\register.mmd\")",
       "Bash(move \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth-register.md\" \"D:\\\\Code\\\\DaoDuckWear-Clothing-Shop\\\\DaoDuckWear-Clothing-Shop\\\\docs\\\\diagrams\\\\auth\\\\register.md\")",
-      "PowerShell(New-Item *)"
+      "PowerShell(New-Item *)",
+      "Bash(git status *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }

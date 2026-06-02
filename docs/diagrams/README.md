@@ -114,8 +114,7 @@ Danh sách diagram theo từng module backend.
 
 | Use case | File | Trạng thái |
 |----------|------|------------|
-| Tạo thanh toán | `payments/create-payment.mmd` | 🔲 |
-| Webhook callback (xác nhận thanh toán) | `payments/payment-webhook.mmd` | 🔲 |
+| Thanh toán đơn hàng qua VNPay (create + return + IPN) | `payments/vnpay-payment.mmd` | ✅ |
 
 ---
 
@@ -161,8 +160,8 @@ Danh sách diagram theo từng module backend.
 | cart | 4 | 4 |
 | vouchers | 0 | 2 |
 | inventory | 2 | 2 |
-| payments | 0 | 2 |
+| payments | 1 | 1 |
 | reviews | 0 | 1 |
 | users | 7 | 7 |
 | favorites | 0 | 1 |
-| **Tổng** | **42** | **53** |
+| **Tổng** | **43** | **52** |
