@@ -1,0 +1,93 @@
+%%{init: {'themeVariables': {'fontSize': '18px'}}}%%
+sequenceDiagram
+    autonumber
+    actor Customer as Khach hang
+    participant FE_C as Browser (Khach)<br/>(ChatPopup + chat.store)
+    participant SockC as Socket.io<br/>(Khach)
+    participant API as ChatController<br/>(REST)
+    participant GW as ChatGateway<br/>(NestJS WS)
+    participant Svc as ChatService
+    participant Conv as MongoDB<br/>(conversations)
+    participant Msg as MongoDB<br/>(messages)
+    participant SockS as Socket.io<br/>(Nhan vien)
+    participant FE_S as Browser (Nhan vien)<br/>(Admin + chat.store)
+    actor Staff as Nhan vien
+
+    rect rgb(235, 242, 255)
+        Note over Customer,Staff: Giai doan 1 — Ket noi Socket & Xac thuc JWT
+
+        Customer->>FE_C: Đăng nhập thành công
+        FE_C->>SockC: connectSocket()
+        Note over FE_C,SockC: Token JWT được gán vào socket.auth trước khi connect<br/>Mỗi lần gọi connectSocket() đều cập nhật token mới nhất
+        SockC->>GW: WebSocket handshake { auth.token = JWT }
+        GW->>GW: verifyAccessToken(token)<br/>socket.data.user = { id, role, shopId }
+        Note over GW: verifyAccessToken dùng thư viện jsonwebtoken<br/>Xác minh chữ ký và hạn dùng của JWT
+
+        Staff->>FE_S: Đăng nhập (RECEPTIONIST / MANAGER)
+        FE_S->>SockS: connectSocket()
+        SockS->>GW: WebSocket handshake { auth.token = JWT }
+        GW->>GW: verifyAccessToken(token)<br/>socket.data.user = { id, role, shopId }
+        GW->>SockS: socket.join('shop:<shopId>')
+        Note over GW,SockS: Chỉ RECEPTIONIST / MANAGER (CHAT_STAFF_ROLES)<br/>mới được join room shop:<shopId><br/>STAFF và ADMIN thường không join → không nhận tin
+    end
+
+    rect rgb(235, 255, 240)
+        Note over Customer,Staff: Giai doan 2 — Mo hop thoai va tai lich su (REST)
+
+        Customer->>FE_C: Mở ChatPopup, chọn cửa hàng
+        FE_C->>API: POST /chat/conversations { shopId }
+        API->>Svc: getOrCreateConversation(customerId, shopId)
+        Svc->>Conv: findOneAndUpdate upsert { customerId, shopId }
+        Note over Svc,Conv: upsert: true — nếu chưa có hội thoại thì tạo mới<br/>Index unique đảm bảo 1 cặp (khách × cửa hàng) = 1 hội thoại
+        Conv-->>Svc: conversation
+        Svc-->>API: conversation
+        API-->>FE_C: 200 { conversation }
+
+        FE_C->>API: GET /chat/conversations/:id/messages
+        API->>Svc: getMessages(conversationId, user)
+        Svc->>Svc: assertMembership(conversation, user)
+        Note over Svc: assertMembership:<br/>Khách — id phải = customerId của hội thoại<br/>Nhân viên — role thuộc CHAT_STAFF_ROLES<br/>              VÀ shopId phải khớp với cửa hàng trong hội thoại
+        Svc->>Msg: find({ conversationId }) sort createdAt asc
+        Msg-->>Svc: messages[]
+        Svc-->>API: messages[]
+        API-->>FE_C: 200 messages[]
+
+        FE_C->>SockC: emit('conversation:join', { conversationId })
+        SockC->>GW: event: conversation:join { conversationId }
+        GW->>Svc: findById + assertMembership
+        GW->>GW: socket.join('conversation:<id>')
+        Note over GW: Từ điểm này socket khách ở trong room<br/>conversation:<id> — sẽ nhận được mọi message:new
+        FE_C-->>Customer: Hiển thị lịch sử tin nhắn
+    end
+
+    rect rgb(235, 242, 255)
+        Note over Customer,Staff: Giai doan 3 — Gui tin nhan (Socket — khong qua REST)
+
+        Customer->>FE_C: Nhập nội dung, nhấn Gửi
+        FE_C->>SockC: socket.emit('message:send',<br/>{ conversationId, content })
+        Note over FE_C,SockC: Không tự hiện tin lên UI ngay<br/>Đợi server broadcast message:new rồi mới hiện<br/>(server là nguồn sự thật duy nhất)
+        SockC->>GW: event: message:send { conversationId, content }
+        GW->>GW: ValidationPipe kiểm tra SendMessageDto
+        GW->>Svc: saveMessage(conversationId, content, user)
+        Svc->>Msg: create { senderId, senderType: 'customer', content }
+        Msg-->>Svc: message (đã lưu vào DB)
+        Svc->>Conv: update lastMessage, shopUnread++
+        Conv-->>Svc: conversation updated
+        Svc-->>GW: { message, conversation }
+        GW->>GW: socket.join('conversation:<id>')
+        Note over GW: Broadcast đến 2 room cùng lúc:<br/>to('conversation:<id>') — socket khách<br/>to('shop:<shopId>') — tất cả nhân viên đang online
+        GW->>SockC: server.emit('message:new', message)
+        GW->>SockS: server.emit('message:new', message)
+    end
+
+    rect rgb(235, 255, 240)
+        Note over Customer,Staff: Giai doan 4 — Nhan tin (ca 2 phia tu dong)
+
+        SockC-->>FE_C: event: message:new
+        FE_C->>FE_C: appendMessage → chèn vào messages[]<br/>Zustand set() → React re-render
+        FE_C-->>Customer: Tin nhắn hiện trên màn hình
+
+        SockS-->>FE_S: event: message:new
+        FE_S->>FE_S: appendMessage → cập nhật conversations<br/>shopUnread++ nếu chưa mở hội thoại
+        FE_S-->>Staff: Tin nhắn mới hiện trong inbox
+    end
