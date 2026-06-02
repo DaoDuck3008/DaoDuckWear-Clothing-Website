@@ -6,7 +6,7 @@ import { cn } from "@/utils/cn";
 import ModalPortal from "../ui/modalPortal";
 import { useAuthStore } from "@/stores/auth.store";
 import { useChatStore } from "@/stores/chat.store";
-import { isChatStaffRole } from "@/constants/role";
+import { isShopRole, isChatStaffRole } from "@/constants/role";
 import { shopApi } from "@/apis/shop.api";
 import Link from "next/link";
 
@@ -42,7 +42,7 @@ export default function ChatPopup() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const isCustomer = !!user && !isChatStaffRole(user.role);
+  const isCustomer = !!user && !isShopRole(user.role);
 
   // Khởi tạo socket + tải hội thoại (để hiện badge chưa đọc) khi là khách đã đăng nhập
   // Phụ thuộc accessToken: chỉ kết nối khi token đã sẵn sàng
@@ -102,7 +102,7 @@ export default function ChatPopup() {
     return "Tin nhắn";
   }, [activeConversationId, activeShop]);
 
-  if (!hydrated || isChatStaffRole(user?.role)) return null;
+  if (!hydrated || isShopRole(user?.role)) return null;
 
   return (
     <>
