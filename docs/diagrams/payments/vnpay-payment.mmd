@@ -17,7 +17,7 @@ sequenceDiagram
         BE-->>FE: 201 { id, orderCode }
 
         FE->>BE: POST /payments/vnpay/create { orderId }
-        Note over FE,BE: Request này có AuthGuard — gửi kèm access token
+        Note over FE,BE: Request này gửi kèm access token
 
         BE->>Orders: findById(orderId)
         alt Đơn không hợp lệ (sai chủ / không phải VNPAY / đã thanh toán)
@@ -27,7 +27,6 @@ sequenceDiagram
         else Hợp lệ
             Orders-->>BE: order
             BE->>BE: Dựng tham số + ký HMAC-SHA512
-            Note over BE: vnp_Amount = finalTotal × 100<br/>vnp_TxnRef = orderCode (mã tra cứu)<br/>vnp_ReturnUrl trỏ về chính backend (/payments/vnpay/return)<br/>vnp_SecureHash = HMAC-SHA512
             BE-->>FE: 200 { paymentUrl }
             FE->>Customer: window.location = paymentUrl (redirect)
         end
@@ -39,7 +38,7 @@ sequenceDiagram
         Customer->>VNPay: Quét QR / nhập thẻ test, xác nhận thanh toán
         VNPay-->>Customer: Trừ tiền, tạo giao dịch
         VNPay->>BE: Redirect trình duyệt → GET /payments/vnpay/return?vnp_*
-        Note over VNPay,BE: Return đi qua trình duyệt user — KHÔNG đảm bảo chạy<br/>(user có thể tắt trình duyệt giữa chừng)
+        Note over VNPay,BE: user có thể tắt trình duyệt giữa chừng
 
         BE->>BE: Tách vnp_SecureHash, tính lại HMAC từ tham số còn lại
         alt Sai chữ ký hoặc ResponseCode ≠ 00

@@ -1,167 +1,161 @@
 # Diagrams — DaoDuckWear
 
-Danh sách diagram theo từng module backend.
+Tài liệu tổng quan toàn bộ biểu đồ mô tả hệ thống DaoDuckWear, tổ chức theo từng nhóm/module. Mỗi biểu đồ minh hoạ một góc nhìn: kiến trúc tổng thể, mô hình dữ liệu (ERD), hoặc luồng nghiệp vụ của một use case cụ thể.
 
-**Loại file:**
-- `.mmd` — Mermaid (sequence diagram, ER diagram) — render trực tiếp trên GitHub
-- `.puml` — PlantUML (activity diagram) — cần export thành ảnh
+## Loại file
 
-**Trạng thái:**
-- ✅ Đã hoàn thành
-- 🔲 Chưa làm
+| Đuôi | Công cụ | Mô tả | Render trên GitHub |
+|---|---|---|---|
+| `.mmd` | Mermaid | Sequence diagram, ER diagram, flowchart | Có (trong file `.md`) |
+| `.puml` | PlantUML | Activity diagram (swim lanes, parallel) | Không — cần export ảnh |
+| `.md` | Markdown | Tài liệu context kèm diagram + bảng giải thích | Có |
 
----
+## Quy ước chung
 
-## er/ (ER Diagrams)
+- **Sequence diagram** mô tả tương tác kỹ thuật theo thời gian giữa các tầng: `Frontend → Backend → MongoDB (collection) → Redis`.
+- **Activity diagram** mô tả luồng nghiệp vụ ở mức cao với swim lanes (`Customer`, `Hệ thống`, third party như `VNPay`, `Google OAuth`).
+- **ER diagram** mô tả quan hệ giữa các MongoDB collection.
+- Quy ước chi tiết (font, actor, participant, note...) xem trong skill: `.claude/skills/diagrams/SKILL.md`.
 
-| Diagram | File | Trạng thái |
-|---------|------|------------|
-| Tổng quan toàn hệ thống (18 collections) | `er/er-overview.mmd` | ✅ |
-| Product & Catalog domain | `er/er-catalog.mmd` | ✅ |
-| Inventory domain | `er/er-inventory.mmd` | ✅ |
-| Commerce domain (Order, Payment, Cart, Voucher) | `er/er-commerce.mmd` | ✅ |
-| User & Social domain | `er/er-user.mmd` | ✅ |
+> Cách xem: file `.mmd` dùng extension **Mermaid Preview** trong VS Code (`Alt+D`); file `.puml` dùng extension **PlantUML**; file `.md` render trực tiếp trên GitHub.
 
 ---
 
-## auth/
+## overview/ — Tổng quan hệ thống
 
-| Use case | File | Trạng thái |
-|----------|------|------------|
-| Đăng nhập (email/password) — sequence | `auth/login.mmd` | ✅ |
-| Đăng ký tài khoản + xác thực email — sequence | `auth/register.mmd` | ✅ |
-| Đăng nhập Google OAuth | `auth/google-login.mmd` | ✅ |
-| Quên mật khẩu | `auth/forgot-password.mmd` | 🔲 |
-| Đặt lại mật khẩu | `auth/reset-password.mmd` | 🔲 |
-| Refresh token | `auth/refresh-token.mmd` | 🔲 |
-| Đổi mật khẩu | `auth/change-password.mmd` | 🔲 |
-| Đăng nhập (email/password) — activity | `auth/login-activity.puml` | ✅ |
-| Đăng ký + xác thực email — activity | `auth/register-activity.puml` | ✅ |
-| Đăng nhập Google OAuth — activity | `auth/google-login-activity.puml` | ✅ |
-| Quên mật khẩu + đặt lại mật khẩu — activity | `auth/forgot-password-activity.puml` | ✅ |
+Điểm khởi đầu để hiểu bức tranh toàn cảnh trước khi đi vào từng luồng chi tiết.
+
+| Biểu đồ | File | Mô tả |
+|---|---|---|
+| Kiến trúc hệ thống | [`../system-architecture.mmd`](../system-architecture.mmd) · [`.md`](./overview/system-architecture.md) | Các tầng client → frontend → backend → data → external services |
+| Use case tổng quát | [`overview/use-case-general.mmd`](./overview/use-case-general.mmd) · [`.md`](./overview/use-case-general.md) | 4 actor (Khách hàng, Nhân viên, Quản lý, Quản trị viên) và các chức năng chính |
 
 ---
 
-## products/
+## er/ — Mô hình dữ liệu (ER Diagrams)
 
-| Use case | File | Trạng thái |
-|----------|------|------------|
-| Tạo sản phẩm — sequence | `products/create-product.mmd` | ✅ |
-| Cập nhật sản phẩm | `products/update-product.mmd` | ✅ |
-| Xem chi tiết sản phẩm | `products/get-product-detail.mmd` | ✅ |
-| Xoá sản phẩm | `products/delete-product.mmd` | ✅ |
-| Danh sách sản phẩm (public) | `products/list-products.mmd` | ✅ |
-| Sản phẩm tương tự | `products/similar-products.mmd` | 🔲 |
-| Tạo sản phẩm — activity | `products/create-product-activity.puml` | ✅ |
+Mô tả 18 collection và quan hệ giữa chúng. Bắt đầu từ tài liệu thiết kế CSDL để có mô tả đầy đủ từng trường.
 
----
-
-## categories/
-
-| Use case | File | Trạng thái |
-|----------|------|------------|
-| Danh sách danh mục (public, dạng cây) | `categories/list-categories.mmd` | ✅ |
-| Danh sách danh mục (admin, dạng phẳng) | `categories/list-categories-admin.mmd` | ✅ |
-| Tạo danh mục | `categories/create-category.mmd` | ✅ |
-| Cập nhật danh mục | `categories/update-category.mmd` | ✅ |
-| Xoá danh mục | `categories/delete-category.mmd` | ✅ |
+| Biểu đồ | File | Mô tả |
+|---|---|---|
+| Thiết kế cơ sở dữ liệu | [`../database-design.md`](../database-design.md) | Tài liệu đầy đủ: từng collection, trường, ràng buộc, quyết định thiết kế |
+| Tổng quan toàn hệ thống | [`er/er-overview.mmd`](./er/er-overview.mmd) | Sơ đồ quan hệ 18 collection (không kèm trường) |
+| Tổng quan kèm trường chính | [`er/er-overview-detail.mmd`](./er/er-overview-detail.mmd) | Như trên nhưng có các trường chính của mỗi bảng |
+| Product & Catalog domain | [`er/er-catalog.mmd`](./er/er-catalog.mmd) | Product, Variant, Category, Color |
+| Inventory domain | [`er/er-inventory.mmd`](./er/er-inventory.mmd) | Inventory, Inventory Import |
+| Commerce domain | [`er/er-commerce.mmd`](./er/er-commerce.mmd) | Order, Payment, Cart, Voucher |
+| User & Social domain | [`er/er-user.mmd`](./er/er-user.mmd) | User, Role, Shop, Review, Favorite, Post |
 
 ---
 
-## orders/
+## auth/ — Xác thực & phân quyền
 
-| Use case | File | Trạng thái |
-|----------|------|------------|
-| Đặt hàng — sequence | `orders/create-order.mmd` | ✅ |
-| Huỷ đơn hàng (customer) | `orders/cancel-order.mmd` | ✅ |
-| Cập nhật trạng thái đơn (admin/staff) | `orders/update-order-status.mmd` | ✅ |
-| Xác nhận đã nhận hàng | `orders/confirm-receipt.mmd` | ✅ |
-| Danh sách đơn hàng | `orders/list-orders.mmd` | ✅ |
-| Đặt hàng — activity | `orders/create-order-activity.puml` | ✅ |
+Mỗi use case auth có sequence diagram (`.mmd`) ở mức kỹ thuật, activity diagram (`.puml`) ở mức nghiệp vụ, và một số có tài liệu context (`.md`).
 
----
-
-## cart/
-
-| Use case | File | Trạng thái |
-|----------|------|------------|
-| Thêm sản phẩm vào giỏ | `cart/add-to-cart.mmd` | ✅ |
-| Cập nhật số lượng | `cart/update-cart-item.mmd` | ✅ |
-| Xoá sản phẩm khỏi giỏ | `cart/remove-cart-item.mmd` | ✅ |
-| Lấy giỏ hàng | `cart/get-cart.mmd` | ✅ |
+| Use case | Sequence | Activity | Context |
+|---|---|---|---|
+| Đăng nhập (email/mật khẩu) | [`login.mmd`](./auth/login.mmd) | [`login-activity.puml`](./auth/login-activity.puml) | [`login.md`](./auth/login.md) |
+| Đăng ký + xác thực email | [`register.mmd`](./auth/register.mmd) | [`register-activity.puml`](./auth/register-activity.puml) | [`register.md`](./auth/register.md) |
+| Đăng nhập Google OAuth | [`google-login.mmd`](./auth/google-login.mmd) | [`google-login-activity.puml`](./auth/google-login-activity.puml) | [`google-login.md`](./auth/google-login.md) |
+| Quên / đặt lại mật khẩu | — | [`forgot-password-activity.puml`](./auth/forgot-password-activity.puml) | — |
 
 ---
 
-## vouchers/
+## products/ — Sản phẩm
 
-| Use case | File | Trạng thái |
-|----------|------|------------|
-| Kiểm tra và xem trước voucher | `vouchers/validate-voucher.mmd` | 🔲 |
-| Tạo voucher | `vouchers/create-voucher.mmd` | 🔲 |
-
----
-
-## inventory/
-
-| Use case | File | Trạng thái |
-|----------|------|------------|
-| Tạo phiếu nhập kho | `inventory/create-import.mmd` | ✅ |
-| Huỷ phiếu nhập kho | `inventory/revoke-import.mmd` | ✅ |
+| Use case | File |
+|---|---|
+| Tạo sản phẩm — sequence | [`products/create-product.mmd`](./products/create-product.mmd) |
+| Tạo sản phẩm — activity | [`products/create-product-activity.puml`](./products/create-product-activity.puml) |
+| Cập nhật sản phẩm | [`products/update-product.mmd`](./products/update-product.mmd) |
+| Xem chi tiết sản phẩm | [`products/get-product-detail.mmd`](./products/get-product-detail.mmd) |
+| Xoá sản phẩm | [`products/delete-product.mmd`](./products/delete-product.mmd) |
+| Danh sách sản phẩm (public) | [`products/list-products.mmd`](./products/list-products.mmd) |
 
 ---
 
-## payments/
+## categories/ — Danh mục
 
-| Use case | File | Trạng thái |
-|----------|------|------------|
-| Thanh toán đơn hàng qua VNPay (create + return + IPN) | `payments/vnpay-payment.mmd` | ✅ |
-
----
-
-## reviews/
-
-| Use case | File | Trạng thái |
-|----------|------|------------|
-| Viết đánh giá sản phẩm | `reviews/create-review.mmd` | 🔲 |
+| Use case | File |
+|---|---|
+| Danh sách danh mục (public, dạng cây) | [`categories/list-categories.mmd`](./categories/list-categories.mmd) |
+| Danh sách danh mục (admin, dạng phẳng) | [`categories/list-categories-admin.mmd`](./categories/list-categories-admin.mmd) |
+| Tạo danh mục | [`categories/create-category.mmd`](./categories/create-category.mmd) |
+| Cập nhật danh mục | [`categories/update-category.mmd`](./categories/update-category.mmd) |
+| Xoá danh mục | [`categories/delete-category.mmd`](./categories/delete-category.mmd) |
 
 ---
 
-## users/
+## orders/ — Đơn hàng
 
-| Use case | File | Trạng thái |
-|----------|------|------------|
-| Tạo tài khoản nhân viên | `users/create-staff.mmd` | ✅ |
-| Danh sách nhân viên | `users/list-staff.mmd` | ✅ |
-| Xem chi tiết nhân viên | `users/get-staff-detail.mmd` | ✅ |
-| Cập nhật tài khoản nhân viên | `users/update-staff.mmd` | ✅ |
-| Xoá tài khoản nhân viên | `users/delete-staff.mmd` | ✅ |
-| Đặt lại mật khẩu nhân viên | `users/reset-staff-password.mmd` | ✅ |
-| Khoá / mở khoá tài khoản khách hàng | `users/lock-customer.mmd` | ✅ |
-
----
-
-## favorites/
-
-| Use case | File | Trạng thái |
-|----------|------|------------|
-| Thêm / xoá sản phẩm yêu thích | `favorites/toggle-favorite.mmd` | 🔲 |
+| Use case | File |
+|---|---|
+| Đặt hàng — sequence | [`orders/create-order.mmd`](./orders/create-order.mmd) |
+| Đặt hàng — activity | [`orders/create-order-activity.puml`](./orders/create-order-activity.puml) |
+| Huỷ đơn hàng (khách) | [`orders/cancel-order.mmd`](./orders/cancel-order.mmd) |
+| Cập nhật trạng thái đơn (admin/staff) | [`orders/update-order-status.mmd`](./orders/update-order-status.mmd) |
+| Xác nhận đã nhận hàng | [`orders/confirm-receipt.mmd`](./orders/confirm-receipt.mmd) |
+| Danh sách đơn hàng | [`orders/list-orders.mmd`](./orders/list-orders.mmd) |
 
 ---
 
-## Tóm tắt tiến độ
+## cart/ — Giỏ hàng
 
-| Module | Hoàn thành | Tổng |
-|--------|-----------|------|
-| er (ER diagrams) | 5 | 5 |
-| auth | 7 | 11 |
-| categories | 5 | 5 |
-| products | 6 | 7 |
-| orders | 6 | 6 |
-| cart | 4 | 4 |
-| vouchers | 0 | 2 |
-| inventory | 2 | 2 |
-| payments | 1 | 1 |
-| reviews | 0 | 1 |
-| users | 7 | 7 |
-| favorites | 0 | 1 |
-| **Tổng** | **43** | **52** |
+| Use case | File |
+|---|---|
+| Thêm sản phẩm vào giỏ | [`cart/add-to-cart.mmd`](./cart/add-to-cart.mmd) |
+| Cập nhật số lượng | [`cart/update-cart-item.mmd`](./cart/update-cart-item.mmd) |
+| Xoá sản phẩm khỏi giỏ | [`cart/remove-cart-item.mmd`](./cart/remove-cart-item.mmd) |
+| Lấy giỏ hàng | [`cart/get-cart.mmd`](./cart/get-cart.mmd) |
+
+---
+
+## vouchers/ — Mã giảm giá
+
+Luồng CRUD voucher (chỉ Admin). Mỗi thao tác tách riêng một file.
+
+| Use case | File |
+|---|---|
+| Tạo voucher | [`vouchers/create-voucher.mmd`](./vouchers/create-voucher.mmd) |
+| Danh sách voucher | [`vouchers/list-voucher.mmd`](./vouchers/list-voucher.mmd) |
+| Cập nhật voucher | [`vouchers/update-voucher.mmd`](./vouchers/update-voucher.mmd) |
+| Xoá voucher (soft delete) | [`vouchers/delete-voucher.mmd`](./vouchers/delete-voucher.mmd) |
+
+---
+
+## inventory/ — Kho hàng
+
+| Use case | File |
+|---|---|
+| Tạo phiếu nhập kho | [`inventory/create-import.mmd`](./inventory/create-import.mmd) |
+| Huỷ phiếu nhập kho | [`inventory/revoke-import.mmd`](./inventory/revoke-import.mmd) |
+
+---
+
+## payments/ — Thanh toán
+
+| Use case | File |
+|---|---|
+| Thanh toán qua VNPay (create + return + IPN) | [`payments/vnpay-payment.mmd`](./payments/vnpay-payment.mmd) · [`.md`](./payments/vnpay-payment.md) |
+
+---
+
+## users/ — Quản lý nhân viên & khách hàng
+
+| Use case | File |
+|---|---|
+| Tạo tài khoản nhân viên | [`users/create-staff.mmd`](./users/create-staff.mmd) |
+| Danh sách nhân viên | [`users/list-staff.mmd`](./users/list-staff.mmd) |
+| Xem chi tiết nhân viên | [`users/get-staff-detail.mmd`](./users/get-staff-detail.mmd) |
+| Cập nhật tài khoản nhân viên | [`users/update-staff.mmd`](./users/update-staff.mmd) |
+| Xoá tài khoản nhân viên | [`users/delete-staff.mmd`](./users/delete-staff.mmd) |
+| Đặt lại mật khẩu nhân viên | [`users/reset-staff-password.mmd`](./users/reset-staff-password.mmd) |
+| Khoá / mở khoá tài khoản khách hàng | [`users/lock-customer.mmd`](./users/lock-customer.mmd) |
+
+---
+
+## chat/ — Nhắn tin
+
+| Use case | File |
+|---|---|
+| Gửi tin nhắn (realtime, Socket.io) | [`chat/send-message.mmd`](./chat/send-message.mmd) · [`.md`](./chat/send-message.md) |
