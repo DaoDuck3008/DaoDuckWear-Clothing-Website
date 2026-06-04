@@ -19,7 +19,7 @@ export function proxy(request: NextRequest) {
     "default-src 'self'",
     `script-src ${scriptSrc}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https://res.cloudinary.com https://lh3.googleusercontent.com",
+    "img-src 'self' data: blob: https://res.cloudinary.com https://lh3.googleusercontent.com",
     `connect-src 'self' ${apiUrl} ${wsUrl} https://accounts.google.com https://provinces.open-api.vn`,
     "font-src 'self'",
     "frame-src https://accounts.google.com https://www.google.com",
