@@ -49,7 +49,7 @@ export class CartService {
       );
     }
 
-    const realStock = inventory.stock - inventory.reservedQuantity;
+    const realStock = inventory.quantity - inventory.reservedQuantity;
 
     if (realStock < quantity) {
       throw new BusinessException(
@@ -107,7 +107,7 @@ export class CartService {
       );
     }
 
-    const realStock = inventory.stock - inventory.reservedQuantity;
+    const realStock = inventory.quantity - inventory.reservedQuantity;
 
     if (realStock < quantity) {
       throw new BusinessException('Số lượng tồn kho không đủ', 'OUT_OF_STOCK');
