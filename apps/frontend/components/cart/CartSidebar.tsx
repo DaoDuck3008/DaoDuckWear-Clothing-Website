@@ -105,7 +105,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
               </div>
             ) : (
               items.map((item) => (
-                <div key={item.variantId} className="flex gap-4 group">
+                <div key={item.id ?? `${item.variantId}-${item.shopId}`} className="flex gap-4 group">
                   <div className="w-24 h-32 bg-stone-50 overflow-hidden border border-stone-100 shrink-0">
                     <img
                       src={
