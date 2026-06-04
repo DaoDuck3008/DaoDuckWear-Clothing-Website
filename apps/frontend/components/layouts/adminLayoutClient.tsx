@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminSidebar from "@/components/layouts/adminSidebar";
 import AdminHeader from "@/components/layouts/adminHeader";
 
@@ -10,6 +10,11 @@ export default function AdminLayoutClient({
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    document.body.classList.add("overflow-hidden");
+    return () => document.body.classList.remove("overflow-hidden");
+  }, []);
 
   return (
     <div className="flex h-screen overflow-hidden font-sans antialiased text-black">

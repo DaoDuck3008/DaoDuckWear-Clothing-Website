@@ -80,14 +80,14 @@ export const useProductCreate = () => {
     const tempColor = `__NEW_${uid()}`;
     setVariants((prev) => [
       ...prev,
-      ...SIZES.map((size) => ({
+      {
         id: uid(),
-        size,
+        size: "",
         color: tempColor,
         price: "",
         sku: "",
         stock: "0",
-      })),
+      },
     ]);
   };
 
@@ -244,7 +244,7 @@ export const useProductCreate = () => {
 
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      document.querySelector("main")?.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
