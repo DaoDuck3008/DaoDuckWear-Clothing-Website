@@ -9,6 +9,7 @@ interface ColorOption {
   name: string;
   slug: string;
   hexCode: string;
+  _id: string;
 }
 
 interface ColorDropdownProps {
@@ -28,7 +29,7 @@ export function ColorDropdown({
 }: ColorDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const selected = options.find((o) => o.id === value);
+  const selected = options.find((o) => o._id === value);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -82,7 +83,7 @@ export function ColorDropdown({
           ) : (
             options.map((opt) => (
               <button
-                key={opt.id}
+                key={opt._id}
                 type="button"
                 onClick={() => {
                   onChange(opt);
@@ -90,7 +91,7 @@ export function ColorDropdown({
                 }}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-stone-50 transition-colors border-b border-stone-50 last:border-0",
-                  value === opt.id && "bg-stone-50",
+                  value === opt._id && "bg-stone-50",
                 )}
               >
                 <div

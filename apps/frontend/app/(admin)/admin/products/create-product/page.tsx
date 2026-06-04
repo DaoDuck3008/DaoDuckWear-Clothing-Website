@@ -417,7 +417,7 @@ export default function CreateProductPage() {
                                         updateColorGroup(
                                           color,
                                           newColorObj.name,
-                                          newColorObj.id,
+                                          newColorObj._id,
                                         );
                                       }}
                                     />

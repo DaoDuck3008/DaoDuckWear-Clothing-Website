@@ -21,6 +21,7 @@ export interface Color {
   name: string;
   slug: string;
   hexCode: string;
+  _id: string;
 }
 
 /**
@@ -259,13 +260,18 @@ export const useProductCreate = () => {
       formData.append("basePrice", basePrice.toString());
       formData.append("categoryId", categoryId);
       formData.append("status", status);
-      formData.append("variants", JSON.stringify(variants.map(v => ({
-        size: v.size,
-        color: v.color,
-        colorHexId: v.colorHexId,
-        price: v.price,
-        sku: v.sku
-      }))));
+      formData.append(
+        "variants",
+        JSON.stringify(
+          variants.map((v) => ({
+            size: v.size,
+            color: v.color,
+            colorHexId: v.colorHexId,
+            price: v.price,
+            sku: v.sku,
+          })),
+        ),
+      );
 
       mainImages.forEach((img, idx) => {
         formData.append(`common_${idx}`, img.file);

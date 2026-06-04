@@ -387,7 +387,7 @@ export default function EditProductPage() {
                         (v) => v.color.trim() === color,
                       );
                       const colorHexId = colorVariants[0]?.colorHexId;
-                      const colorObj = colors.find((c) => c.id === colorHexId);
+                      const colorObj = colors.find((c) => c._id === colorHexId);
                       const isPlaceholder = color.startsWith("__NEW_COLOR_");
 
                       return (
@@ -425,7 +425,7 @@ export default function EditProductPage() {
                                       options={colors}
                                       value={colorHexId}
                                       onChange={(c) =>
-                                        updateColorGroup(color, isPlaceholder ? c.name : color, c.id)
+                                        updateColorGroup(color, isPlaceholder ? c.name : color, c._id)
                                       }
                                       placeholder={isPlaceholder ? "Chọn màu..." : undefined}
                                     />
