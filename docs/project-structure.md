@@ -228,6 +228,10 @@ Người dùng nhập email + mật khẩu, nhấn "Đăng nhập"
 
 ```
 docs/
+├── database-design.md       # Tài liệu thiết kế cơ sở dữ liệu
+├── system-architecture.mmd  # Sơ đồ kiến trúc hệ thống
+├── project-structure.md     # Tài liệu này
+├── test/                    # Báo cáo kiểm thử (test case theo module)
 └── diagrams/
     ├── overview/             # Use case tổng quát, kiến trúc hệ thống
     ├── er/                   # ERD + tài liệu thiết kế CSDL
@@ -238,3 +242,4 @@ docs/
 Xem thêm:
 - [Tài liệu thiết kế cơ sở dữ liệu](./database-design.md)
 - [Kiến trúc hệ thống tổng quát](./diagrams/overview/system-architecture.md)
+- [Báo cáo kiểm thử các module](./test/README.md)
