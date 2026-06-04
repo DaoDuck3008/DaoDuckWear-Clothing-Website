@@ -97,13 +97,36 @@ export const useProductCreate = () => {
       {
         id: uid(),
         size: "",
-        color: color,
+        color: color.trim(),
         colorHexId: colorHexId,
         price: "",
         sku: "",
         stock: "0",
       },
     ]);
+  };
+
+  const fillAllSizes = (color: string, colorHexId?: string) => {
+    const cleanColor = color.trim();
+    setVariants((prev) => {
+      const existing = prev
+        .filter((v) => v.color.trim() === cleanColor)
+        .map((v) => v.size);
+      const missing = SIZES.filter((s) => s && !existing.includes(s));
+      if (missing.length === 0) return prev;
+      return [
+        ...prev,
+        ...missing.map((size) => ({
+          id: uid(),
+          size,
+          color: cleanColor,
+          colorHexId,
+          price: "",
+          sku: "",
+          stock: "0",
+        })),
+      ];
+    });
   };
 
   const updateVariant = <K extends keyof Variant>(
@@ -141,22 +164,25 @@ export const useProductCreate = () => {
     newColor: string,
     newColorHexId?: string,
   ) => {
+    const cleanOld = oldColor.trim();
+    const cleanNew = newColor.trim();
     setVariants((prev) =>
       prev.map((v) => {
-        if (v.color === oldColor) {
+        if (v.color.trim() === cleanOld) {
           return {
             ...v,
-            color: newColor,
+            color: cleanNew,
             colorHexId: newColorHexId || v.colorHexId,
           };
         }
         return v;
       }),
     );
-    if (oldColor !== newColor) {
+    if (cleanOld !== cleanNew) {
       setColorImages((prev) => {
-        const { [oldColor]: moved, ...rest } = prev;
-        return moved ? { ...rest, [newColor]: moved } : rest;
+        const moved = prev[cleanOld] ?? prev[oldColor];
+        const { [cleanOld]: _a, [oldColor]: _b, ...rest } = prev;
+        return moved ? { ...rest, [cleanNew]: moved } : rest;
       });
     }
   };
@@ -165,7 +191,12 @@ export const useProductCreate = () => {
     setVariants((prev) => prev.filter((v) => v.id !== id));
 
   const removeColorGroup = (color: string) => {
-    setVariants((prev) => prev.filter((v) => v.color !== color));
+    const cleanColor = color.trim();
+    setVariants((prev) => prev.filter((v) => v.color.trim() !== cleanColor));
+    setColorImages((prev) => {
+      const { [cleanColor]: _, [color]: __, ...rest } = prev;
+      return rest;
+    });
   };
 
   const handleColorImages = (color: string, files: File[]) => {
@@ -321,6 +352,7 @@ export const useProductCreate = () => {
     handleNameChange,
     addVariant,
     addSizeToColor,
+    fillAllSizes,
     updateVariant,
     updateColorGroup,
     removeVariant,

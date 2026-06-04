@@ -113,6 +113,7 @@ export default function CreateProductPage() {
     handleNameChange,
     addVariant,
     addSizeToColor,
+    fillAllSizes,
     updateVariant,
     updateColorGroup,
     removeVariant,
@@ -517,17 +518,33 @@ export default function CreateProductPage() {
                                 </div>
                               ))}
 
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  addSizeToColor(color, currentColorHexId)
-                                }
-                                className="mt-2 flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-black text-slate-400 hover:text-slate-900 transition-colors"
-                              >
-                                <Plus className="w-3 h-3" />
-                                Thêm size cho màu{" "}
-                                {isPlaceholder ? "này" : color}
-                              </button>
+                              <div className="mt-2 flex items-center gap-4 flex-wrap">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    addSizeToColor(color, currentColorHexId)
+                                  }
+                                  className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-black text-slate-400 hover:text-slate-900 transition-colors"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                  Thêm size cho màu{" "}
+                                  {isPlaceholder ? "này" : color}
+                                </button>
+                                {SIZES.some(
+                                  (s) => !colorVariants.some((v) => v.size === s),
+                                ) && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      fillAllSizes(color, currentColorHexId)
+                                    }
+                                    className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-black text-indigo-400 hover:text-indigo-700 transition-colors"
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                    Thêm đủ size
+                                  </button>
+                                )}
+                              </div>
                             </div>
 
                             {/* Color Images (inline) */}
