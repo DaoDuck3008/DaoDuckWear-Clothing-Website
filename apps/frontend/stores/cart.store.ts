@@ -31,8 +31,10 @@ export const useCartStore = create<CartState>()(
         try {
           const { data } = await cartApi.getCart();
 
-          // Lọc bỏ các item mà sản phẩm không còn tồn tại (bị xóa cứng)
-          const validItems = data.items.filter((item: any) => item.product);
+          // Backend mapCart đã lọc null (variant/product bị xoá), chỉ cần lọc thêm phòng thủ
+          const validItems = (data.items ?? []).filter(
+            (item: any) => item?.variantId,
+          );
 
           set({
             items: validItems,
