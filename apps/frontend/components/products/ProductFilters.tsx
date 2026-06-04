@@ -166,7 +166,7 @@ export default function ProductFilters({
                       className="w-8 h-8 rounded-md border border-stone-200 flex items-center justify-center transition-all"
                       style={{ backgroundColor: color.hexCode }}
                     >
-                      {isColorSelected(color.id) && (
+                      {isColorSelected(color._id) && (
                         <Check
                           className={cn(
                             "w-4 h-4",
