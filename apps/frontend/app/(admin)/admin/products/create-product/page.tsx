@@ -195,10 +195,8 @@ export default function CreateProductPage() {
         <form id="create-product-form" onSubmit={handleSubmit}>
           <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-10 py-6">
             <div className="grid grid-cols-12 gap-5 items-start">
-
               {/* ─── LEFT SIDEBAR ─── */}
               <aside className="col-span-12 lg:col-span-4 space-y-4 lg:sticky lg:top-20 h-fit">
-
                 {/* Basic Info Card */}
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-4">
                   <SectionHeader
@@ -227,7 +225,9 @@ export default function CreateProductPage() {
                     hint="Tự động tạo từ tên sản phẩm, có thể chỉnh sửa"
                   >
                     <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/50 focus-within:ring-2 focus-within:ring-slate-900 focus-within:border-transparent focus-within:bg-white transition-all px-4 py-2.5">
-                      <span className="text-slate-400 text-sm font-mono flex-shrink-0">/</span>
+                      <span className="text-slate-400 text-sm font-mono flex-shrink-0">
+                        /
+                      </span>
                       <input
                         required
                         value={slug}
@@ -310,7 +310,6 @@ export default function CreateProductPage() {
 
               {/* ─── RIGHT PANEL ─── */}
               <div className="col-span-12 lg:col-span-8 space-y-4">
-
                 {/* Description Card */}
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                   <SectionHeader
@@ -416,7 +415,9 @@ export default function CreateProductPage() {
                                       onChange={(newColorObj) => {
                                         updateColorGroup(
                                           color,
-                                          newColorObj.name,
+                                          isPlaceholder
+                                            ? newColorObj.name
+                                            : color,
                                           newColorObj._id,
                                         );
                                       }}
@@ -457,7 +458,11 @@ export default function CreateProductPage() {
                                   <select
                                     value={v.size}
                                     onChange={(e) =>
-                                      updateVariant(v.id, "size", e.target.value)
+                                      updateVariant(
+                                        v.id,
+                                        "size",
+                                        e.target.value,
+                                      )
                                     }
                                     className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all cursor-pointer"
                                   >
@@ -492,7 +497,11 @@ export default function CreateProductPage() {
                                     type="number"
                                     value={v.price}
                                     onChange={(e) =>
-                                      updateVariant(v.id, "price", e.target.value)
+                                      updateVariant(
+                                        v.id,
+                                        "price",
+                                        e.target.value,
+                                      )
                                     }
                                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all placeholder:text-slate-300"
                                     placeholder="Tùy chọn"
@@ -516,7 +525,8 @@ export default function CreateProductPage() {
                                 className="mt-2 flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-black text-slate-400 hover:text-slate-900 transition-colors"
                               >
                                 <Plus className="w-3 h-3" />
-                                Thêm size cho màu {isPlaceholder ? "này" : color}
+                                Thêm size cho màu{" "}
+                                {isPlaceholder ? "này" : color}
                               </button>
                             </div>
 
@@ -524,15 +534,22 @@ export default function CreateProductPage() {
                             <div className="px-4 pb-4 border-t border-slate-100">
                               <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 pt-3 mb-3">
                                 Ảnh màu {isPlaceholder ? "này" : color}
-                                <span className="font-normal normal-case tracking-normal text-slate-300 ml-1">({cImages.length} ảnh)</span>
+                                <span className="font-normal normal-case tracking-normal text-slate-300 ml-1">
+                                  ({cImages.length} ảnh)
+                                </span>
                               </p>
                               <MainImageDropzone
                                 images={cImages}
-                                onAdd={(files) => handleColorImages(color, files)}
+                                onAdd={(files) =>
+                                  handleColorImages(color, files)
+                                }
                                 onRemove={(idx) => removeColorImage(color, idx)}
-                                onSetMain={(idx) => handleSetMainColorImage(color, idx)}
+                                onSetMain={(idx) =>
+                                  handleSetMainColorImage(color, idx)
+                                }
                                 maxImages={8}
                                 note="Ảnh đầu tiên sẽ là ảnh đại diện cho màu này."
+                                compact
                               />
                             </div>
                           </div>

@@ -20,6 +20,7 @@ interface MainImageDropzoneProps {
   title?: string;
   note?: string;
   isMainPanel?: boolean;
+  compact?: boolean;
 }
 
 export function MainImageDropzone({
@@ -31,6 +32,7 @@ export function MainImageDropzone({
   title = "Ảnh sản phẩm",
   note = "Ảnh đầu tiên là ảnh chính. Sẽ upload lên Cloudinary khi lưu.",
   isMainPanel = true,
+  compact = false,
 }: MainImageDropzoneProps) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { "image/*": [] },
@@ -40,15 +42,17 @@ export function MainImageDropzone({
   });
 
   return (
-    <div className="bg-white border border-stone-100 p-5 space-y-4">
-      <div className="flex items-center justify-between pb-2.5 border-b border-stone-50">
-        <h2 className="text-sm font-bold uppercase tracking-[0.3em] text-stone-400">
-          {title}
-        </h2>
-        <span className="text-sm text-stone-300 font-bold">
-          {images.length} / {maxImages}
-        </span>
-      </div>
+    <div className={compact ? "space-y-3" : "bg-white border border-stone-100 p-5 space-y-4"}>
+      {!compact && (
+        <div className="flex items-center justify-between pb-2.5 border-b border-stone-50">
+          <h2 className="text-sm font-bold uppercase tracking-[0.3em] text-stone-400">
+            {title}
+          </h2>
+          <span className="text-sm text-stone-300 font-bold">
+            {images.length} / {maxImages}
+          </span>
+        </div>
+      )}
 
       <div className="grid grid-cols-2  md:grid-cols-3 gap-3">
         {images.map((img, idx) => (
@@ -86,7 +90,7 @@ export function MainImageDropzone({
           <div
             {...getRootProps()}
             className={`border border-dashed transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer outline-none rounded-sm
-              ${images.length === 0 ? "col-span-full py-8" : "aspect-square"}
+              ${images.length === 0 ? `col-span-full ${compact ? "py-3" : "py-8"}` : "aspect-square"}
               ${
                 isDragActive
                   ? "border-black bg-stone-50 scale-[0.99]"
