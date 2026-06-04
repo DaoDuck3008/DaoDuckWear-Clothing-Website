@@ -14,9 +14,10 @@ interface ShopSelectProps {
   onChange: (id: string) => void;
   shops: Shop[];
   error?: string;
+  dropUp?: boolean;
 }
 
-export function ShopSelect({ value, onChange, shops, error }: ShopSelectProps) {
+export function ShopSelect({ value, onChange, shops, error, dropUp }: ShopSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -55,7 +56,7 @@ export function ShopSelect({ value, onChange, shops, error }: ShopSelectProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute z-[60] w-full mt-1 bg-white border border-stone-100 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className={`absolute z-[60] w-full bg-white border border-stone-100 shadow-xl overflow-hidden animate-in fade-in duration-200 ${dropUp ? "bottom-full mb-1 slide-in-from-bottom-1" : "mt-1 slide-in-from-top-1"}`}>
           <div className="max-h-[240px] overflow-y-auto">
             {shops.length === 0 ? (
               <div className="p-4 text-center text-xs uppercase tracking-widest text-stone-400">

@@ -24,7 +24,7 @@ import { Select } from "@/components/ui/Select";
 import { ShopSelect, type Shop } from "@/components/ui/ShopSelect";
 import { cn } from "@/utils/cn";
 import { useConfirm } from "@/hooks/useConfirm";
-import type { Staff, StaffEmploymentStatus, StaffRole } from "@/types/staff";
+import type { Staff, StaffEmploymentStatus, StaffRole, StaffStats } from "@/types/staff";
 import { StaffFormModal } from "./StaffFormModal";
 import { StaffDetailModal } from "./StaffDetailModal";
 
@@ -70,6 +70,7 @@ export default function AdminStaffPage() {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [shops, setShops] = useState<Shop[]>([]);
+  const [stats, setStats] = useState<StaffStats | null>(null);
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"" | StaffRole>("");
@@ -97,12 +98,14 @@ export default function AdminStaffPage() {
         ...base,
         { value: "ADMIN", label: "ADMIN" },
         { value: "MANAGER", label: "MANAGER" },
+        { value: "RECEPTIONIST", label: "RECEPTIONIST" },
         { value: "STAFF", label: "STAFF" },
       ];
     }
     return [
       ...base,
       { value: "MANAGER", label: "MANAGER" },
+      { value: "RECEPTIONIST", label: "RECEPTIONIST" },
       { value: "STAFF", label: "STAFF" },
     ];
   }, [isAdmin]);
@@ -135,6 +138,7 @@ export default function AdminStaffPage() {
     }
     if (isAdmin) {
       shopApi.getShops().then(setShops).catch(handleApiError);
+      userApi.getStats().then(setStats).catch(() => {});
     }
   }, [hydrated, currentRole, hasAccess, isAdmin, router]);
 
@@ -175,14 +179,14 @@ export default function AdminStaffPage() {
       return;
     }
     const ok = await confirm({
-      title: "Xóa nhân viên",
-      description: `Bạn có chắc muốn xóa nhân viên "${s.fullName || s.username}"?`,
-      confirmText: "Xóa",
+      title: "Thu hồi quyền nhân viên",
+      description: `Tài khoản "${s.fullName || s.username}" sẽ được chuyển về quyền khách hàng thông thường. Dữ liệu tài khoản vẫn được giữ lại.`,
+      confirmText: "Thu hồi",
     });
     if (!ok) return;
     try {
       await userApi.deleteStaff(s.id);
-      toast.success("Đã xóa nhân viên");
+      toast.success("Đã thu hồi quyền nhân viên");
       if (staff.length === 1 && page > 1) {
         setPage(page - 1);
       } else {
@@ -250,6 +254,71 @@ export default function AdminStaffPage() {
           </button>
         )}
       </div>
+
+      {/* Stats — chỉ hiện với ADMIN */}
+      {isAdmin && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {(
+            [
+              {
+                label: "Tổng nhân sự",
+                value: stats?.total,
+                badge: null,
+                badgeCls: "",
+                numCls: "text-slate-900",
+                iconBg: "bg-slate-100",
+              },
+              {
+                label: "Admin",
+                value: stats?.admin,
+                badge: "ADMIN",
+                badgeCls: "bg-rose-50 text-rose-700 border-rose-200",
+                numCls: "text-rose-700",
+                iconBg: "bg-rose-50",
+              },
+              {
+                label: "Quản lý",
+                value: stats?.manager,
+                badge: "MANAGER",
+                badgeCls: "bg-indigo-50 text-indigo-700 border-indigo-200",
+                numCls: "text-indigo-700",
+                iconBg: "bg-indigo-50",
+              },
+              {
+                label: "Staff & Lễ tân",
+                value: stats?.frontline,
+                badge: "STAFF",
+                badgeCls: "bg-stone-100 text-stone-600 border-stone-200",
+                numCls: "text-stone-700",
+                iconBg: "bg-stone-100",
+              },
+            ] as const
+          ).map(({ label, value, badge, badgeCls, numCls, iconBg }) => (
+            <div
+              key={label}
+              className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 flex items-center gap-4"
+            >
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
+                {badge ? (
+                  <span className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border ${badgeCls}`}>
+                    {badge}
+                  </span>
+                ) : (
+                  <Users className="w-5 h-5 text-slate-500" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className={`text-2xl font-bold ${numCls}`}>
+                  {value ?? <span className="inline-block w-8 h-6 bg-slate-100 rounded animate-pulse" />}
+                </p>
+                <p className="text-[11px] font-medium text-slate-500 mt-0.5 uppercase tracking-wider truncate">
+                  {label}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Search & Filter */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">

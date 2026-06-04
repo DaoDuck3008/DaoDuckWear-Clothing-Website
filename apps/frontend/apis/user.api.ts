@@ -4,10 +4,16 @@ import type {
   Staff,
   StaffListParams,
   StaffListResponse,
+  StaffStats,
   UpdateStaffPayload,
 } from "@/types/staff";
 
 export const userApi = {
+  getStats: async (): Promise<StaffStats> => {
+    const response = await api.get("/users/staff/stats");
+    return response.data;
+  },
+
   getStaff: async (
     params: StaffListParams = {},
   ): Promise<StaffListResponse> => {

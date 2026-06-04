@@ -36,6 +36,13 @@ export interface Staff {
   createdAt: string;
 }
 
+export interface StaffStats {
+  total: number;
+  admin: number;
+  manager: number;
+  frontline: number;
+}
+
 export interface StaffListResponse {
   data: Staff[];
   total: number;

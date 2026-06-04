@@ -54,6 +54,13 @@ export interface CustomerOrder {
   itemCount: number;
 }
 
+export interface CustomerStats {
+  total: number;
+  active: number;
+  locked: number;
+  unverified: number;
+}
+
 export interface CustomerOrdersResponse {
   data: CustomerOrder[];
   total: number;

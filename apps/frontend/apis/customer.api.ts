@@ -4,9 +4,15 @@ import type {
   CustomerListParams,
   CustomerListResponse,
   CustomerOrdersResponse,
+  CustomerStats,
 } from "@/types/customer";
 
 export const customerApi = {
+  getStats: async (): Promise<CustomerStats> => {
+    const response = await api.get("/users/customers/stats");
+    return response.data;
+  },
+
   getCustomers: async (
     params: CustomerListParams = {},
   ): Promise<CustomerListResponse> => {
@@ -36,6 +42,16 @@ export const customerApi = {
 
   unlockCustomer: async (id: string): Promise<Customer> => {
     const response = await api.patch(`/users/customers/${id}/unlock`);
+    return response.data;
+  },
+
+  promoteToStaff: async (
+    id: string,
+    shopId: string,
+  ): Promise<{ success: boolean }> => {
+    const response = await api.patch(`/users/customers/${id}/promote-to-staff`, {
+      shopId,
+    });
     return response.data;
   },
 };

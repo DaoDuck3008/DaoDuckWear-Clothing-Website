@@ -11,12 +11,15 @@ import {
   ShoppingBag,
   Unlock,
   User as UserIcon,
+  UserCheck,
   X,
   Loader2,
 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { customerApi } from "@/apis/customer.api";
+import { shopApi } from "@/apis/shop.api";
+import { ShopSelect, type Shop } from "@/components/ui/ShopSelect";
 import { handleApiError } from "@/utils/error.util";
 import { formatPrice, formatDate } from "@/utils/format.util";
 import { cn } from "@/utils/cn";
@@ -38,6 +41,7 @@ interface CustomerDetailModalProps {
   customerId: string | null;
   onClose: () => void;
   onLockChanged?: (customer: Customer) => void;
+  onPromoted?: (customerId: string) => void;
 }
 
 const PROVIDER_BADGE: Record<CustomerProvider, string> = {
@@ -59,11 +63,47 @@ export function CustomerDetailModal({
   customerId,
   onClose,
   onLockChanged,
+  onPromoted,
 }: CustomerDetailModalProps) {
   const { confirm, confirmDialog } = useConfirm();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(false);
   const [lockChanging, setLockChanging] = useState(false);
+
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [promoting, setPromoting] = useState(false);
+  const [promoteShopId, setPromoteShopId] = useState("");
+  const [promoteLoading, setPromoteLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      setPromoting(false);
+      setPromoteShopId("");
+      return;
+    }
+    shopApi.getShops().then(setShops).catch(() => {});
+  }, [open]);
+
+  const handlePromote = async () => {
+    if (!customer || !promoteShopId) return;
+    const ok = await confirm({
+      title: "Cấp quyền nhân viên STAFF",
+      description: `Tài khoản "${customer.username}" sẽ được cấp quyền STAFF tại chi nhánh đã chọn.`,
+      confirmText: "Xác nhận",
+    });
+    if (!ok) return;
+    setPromoteLoading(true);
+    try {
+      await customerApi.promoteToStaff(customer.id, promoteShopId);
+      toast.success("Đã cấp quyền STAFF thành công");
+      onPromoted?.(customer.id);
+      onClose();
+    } catch (error) {
+      handleApiError(error);
+    } finally {
+      setPromoteLoading(false);
+    }
+  };
 
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -388,28 +428,74 @@ export function CustomerDetailModal({
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 flex-shrink-0">
-          {customer && (
+        {customer && promoting && (
+          <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/60 flex items-center gap-3 flex-shrink-0">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 shrink-0">
+              Chi nhánh
+            </span>
+            <div className="flex-1">
+              <ShopSelect
+                value={promoteShopId}
+                onChange={setPromoteShopId}
+                shops={shops}
+                dropUp
+              />
+            </div>
             <button
               type="button"
-              onClick={handleLockToggle}
-              disabled={lockChanging}
-              className={cn(
-                "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-50",
-                customer.isLocked
-                  ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
-                  : "bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200",
-              )}
+              onClick={handlePromote}
+              disabled={!promoteShopId || promoteLoading}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-all disabled:opacity-50 shrink-0"
             >
-              {lockChanging ? (
+              {promoteLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
-              ) : customer.isLocked ? (
-                <Unlock className="w-4 h-4" />
               ) : (
-                <Lock className="w-4 h-4" />
+                <UserCheck className="w-4 h-4" />
               )}
-              {customer.isLocked ? "Mở khóa tài khoản" : "Khóa tài khoản"}
+              Xác nhận
             </button>
+            <button
+              type="button"
+              onClick={() => { setPromoting(false); setPromoteShopId(""); }}
+              className="px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all shrink-0"
+            >
+              Hủy
+            </button>
+          </div>
+        )}
+
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 flex-shrink-0">
+          {customer && !promoting && (
+            <>
+              <button
+                type="button"
+                onClick={() => setPromoting(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition-all"
+              >
+                <UserCheck className="w-4 h-4" />
+                Cấp quyền STAFF
+              </button>
+              <button
+                type="button"
+                onClick={handleLockToggle}
+                disabled={lockChanging}
+                className={cn(
+                  "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-50",
+                  customer.isLocked
+                    ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
+                    : "bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200",
+                )}
+              >
+                {lockChanging ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : customer.isLocked ? (
+                  <Unlock className="w-4 h-4" />
+                ) : (
+                  <Lock className="w-4 h-4" />
+                )}
+                {customer.isLocked ? "Mở khóa tài khoản" : "Khóa tài khoản"}
+              </button>
+            </>
           )}
           <button
             type="button"

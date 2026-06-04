@@ -4,8 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Clock,
   Eye,
   Loader2,
   Lock,
@@ -23,7 +25,7 @@ import { formatDate } from "@/utils/format.util";
 import { Select } from "@/components/ui/Select";
 import { cn } from "@/utils/cn";
 import { useConfirm } from "@/hooks/useConfirm";
-import type { Customer, CustomerProvider } from "@/types/customer";
+import type { Customer, CustomerProvider, CustomerStats } from "@/types/customer";
 import { CustomerDetailModal } from "./CustomerDetailModal";
 
 const PROVIDER_BADGE: Record<CustomerProvider, string> = {
@@ -56,6 +58,8 @@ export default function AdminCustomersPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
+
+  const [stats, setStats] = useState<CustomerStats | null>(null);
 
   const [detailId, setDetailId] = useState<string | null>(null);
   const [lockingId, setLockingId] = useState<string | null>(null);
@@ -102,7 +106,9 @@ export default function AdminCustomersPage() {
     if (!hydrated) return;
     if (user && !isAdmin) {
       router.replace("/admin");
+      return;
     }
+    customerApi.getStats().then(setStats).catch(() => {});
   }, [hydrated, user, isAdmin, router]);
 
   useEffect(() => {
@@ -149,6 +155,11 @@ export default function AdminCustomersPage() {
     );
   };
 
+  const handleDetailPromoted = (customerId: string) => {
+    setCustomers((prev) => prev.filter((it) => it.id !== customerId));
+    setDetailId(null);
+  };
+
   if (!hydrated) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -172,6 +183,63 @@ export default function AdminCustomersPage() {
             Toàn bộ tài khoản khách đã đăng ký trên hệ thống.
           </p>
         </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {(
+          [
+            {
+              label: "Tổng khách hàng",
+              value: stats?.total,
+              icon: Users,
+              iconBg: "bg-slate-100",
+              iconColor: "text-slate-500",
+              valuColor: "text-slate-900",
+            },
+            {
+              label: "Đang hoạt động",
+              value: stats?.active,
+              icon: CheckCircle2,
+              iconBg: "bg-emerald-50",
+              iconColor: "text-emerald-600",
+              valuColor: "text-emerald-700",
+            },
+            {
+              label: "Đang bị khóa",
+              value: stats?.locked,
+              icon: Lock,
+              iconBg: "bg-rose-50",
+              iconColor: "text-rose-500",
+              valuColor: "text-rose-700",
+            },
+            {
+              label: "Chưa kích hoạt",
+              value: stats?.unverified,
+              icon: Clock,
+              iconBg: "bg-amber-50",
+              iconColor: "text-amber-500",
+              valuColor: "text-amber-700",
+            },
+          ] as const
+        ).map(({ label, value, icon: Icon, iconBg, iconColor, valuColor }) => (
+          <div
+            key={label}
+            className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 flex items-center gap-4"
+          >
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
+              <Icon className={`w-5 h-5 ${iconColor}`} />
+            </div>
+            <div className="min-w-0">
+              <p className={`text-2xl font-bold ${valuColor}`}>
+                {value ?? <span className="inline-block w-8 h-6 bg-slate-100 rounded animate-pulse" />}
+              </p>
+              <p className="text-[11px] font-medium text-slate-500 mt-0.5 uppercase tracking-wider truncate">
+                {label}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Search & Filter */}
@@ -492,6 +560,7 @@ export default function AdminCustomersPage() {
         customerId={detailId}
         onClose={() => setDetailId(null)}
         onLockChanged={handleDetailLockChanged}
+        onPromoted={handleDetailPromoted}
       />
 
       {confirmDialog}
