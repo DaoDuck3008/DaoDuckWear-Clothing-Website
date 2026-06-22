@@ -1,0 +1,57 @@
+%%{init: {'themeVariables': {'fontSize': '14px'}}}%%
+%% BIỂU ĐỒ PHÂN CẤP CHỨC NĂNG — Phía Quản trị (Backend)
+%% Chuẩn BPC: node hình chữ nhật, nối bằng đường thẳng (không mũi tên),
+%% tên chức năng là cụm động từ, phân rã theo 23 module thực tế.
+flowchart TD
+    BE["HỆ THỐNG DaoDuckWear<br/>Chức năng phía Quản trị"]
+
+    BE --- A["Quản lý xác thực và phân quyền"]
+    BE --- B["Quản lý sản phẩm và kho"]
+    BE --- C["Quản lý bán hàng"]
+    BE --- D["Quản lý tương tác và nội dung"]
+    BE --- E["Vận hành và báo cáo"]
+    BE --- F["Hạ tầng và tiện ích"]
+
+    %% 1. Xác thực và phân quyền
+    A --- A1["Đăng nhập và Đăng ký"]
+    A --- A2["Phân quyền vai trò"]
+    A --- A3["Quản lý người dùng"]
+
+    %% 2. Sản phẩm và kho
+    B --- B1["Quản lý danh mục"]
+    B --- B2["Quản lý sản phẩm"]
+    B --- B3["Quản lý màu sắc"]
+    B --- B4["Quản lý tồn kho"]
+    B --- B5["Quản lý chi nhánh"]
+
+    %% 3. Bán hàng
+    C --- C1["Quản lý giỏ hàng"]
+    C --- C2["Xử lý đơn hàng"]
+    C --- C3["Xử lý thanh toán"]
+    C --- C4["Quản lý mã giảm giá"]
+
+    %% 4. Tương tác và nội dung
+    D --- D1["Quản lý yêu thích"]
+    D --- D2["Quản lý đánh giá"]
+    D --- D3["Chat với khách"]
+    D --- D4["Quản lý bài viết"]
+    D --- D5["Quản lý banner"]
+
+    %% 5. Vận hành và báo cáo
+    E --- E1["Thống kê báo cáo"]
+    E --- E2["Ghi nhật ký hành động"]
+
+    %% 6. Hạ tầng và tiện ích
+    F --- F1["Gửi email"]
+    F --- F2["Upload ảnh"]
+    F --- F3["Lưu cache dữ liệu"]
+    F --- F4["Kiểm tra hệ thống"]
+
+    %% Phân cấp bằng sắc độ nhẹ (vẫn là node chữ nhật)
+    classDef root  fill:#CFE2F3,stroke:#2A4D69,stroke-width:2px,color:#16324f;
+    classDef group fill:#EFEFEF,stroke:#666,stroke-width:1px,color:#222;
+    classDef leaf  fill:#FFFFFF,stroke:#888,stroke-width:1px,color:#222;
+
+    class BE root;
+    class A,B,C,D,E,F group;
+    class A1,A2,A3,B1,B2,B3,B4,B5,C1,C2,C3,C4,D1,D2,D3,D4,D5,E1,E2,F1,F2,F3,F4 leaf;

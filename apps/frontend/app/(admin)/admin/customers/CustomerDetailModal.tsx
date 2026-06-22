@@ -438,7 +438,6 @@ export function CustomerDetailModal({
                 value={promoteShopId}
                 onChange={setPromoteShopId}
                 shops={shops}
-                dropUp
               />
             </div>
             <button

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { DropdownPortal } from "./DropdownPortal";
 
 interface Option {
   value: string;
@@ -25,25 +26,16 @@ export function Select({
   className,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
-    <div className={cn("relative", className)} ref={containerRef}>
+    <div className={cn("relative", className)}>
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between bg-transparent border-b border-stone-200 hover:border-black py-2.5 text-sm transition-colors text-left focus:outline-none"
       >
         <span
@@ -63,26 +55,30 @@ export function Select({
         />
       </button>
 
-      {open && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-white border border-stone-100 shadow-2xl mt-1 max-h-56 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
-          {options.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => {
-                onChange(opt.value);
-                setOpen(false);
-              }}
-              className={cn(
-                "w-full text-left px-4 py-2.5 text-xs hover:bg-stone-50 transition-colors",
-                value === opt.value ? "bg-stone-100 font-bold text-black" : "text-stone-600"
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
+      <DropdownPortal
+        anchorRef={triggerRef}
+        open={open}
+        onClose={() => setOpen(false)}
+        estimatedHeight={224}
+        className="bg-white border border-stone-100 shadow-2xl max-h-56 overflow-y-auto animate-in fade-in duration-150"
+      >
+        {options.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => {
+              onChange(opt.value);
+              setOpen(false);
+            }}
+            className={cn(
+              "w-full text-left px-4 py-2.5 text-xs hover:bg-stone-50 transition-colors",
+              value === opt.value ? "bg-stone-100 font-bold text-black" : "text-stone-600"
+            )}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </DropdownPortal>
     </div>
   );
 }

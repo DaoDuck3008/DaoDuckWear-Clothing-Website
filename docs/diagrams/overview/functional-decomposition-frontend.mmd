@@ -1,0 +1,47 @@
+%%{init: {'themeVariables': {'fontSize': '15px'}}}%%
+%% BIỂU ĐỒ PHÂN CẤP CHỨC NĂNG — Phía Khách hàng (Frontend)
+%% Chuẩn BPC: node hình chữ nhật, nối bằng đường thẳng (không mũi tên),
+%% tên chức năng là cụm động từ, phân rã từ gốc xuống.
+flowchart TD
+    FE["HỆ THỐNG DaoDuckWear<br/>Chức năng phía Khách hàng"]
+
+    FE --- A["Đăng nhập và Đăng ký"]
+    FE --- B["Tìm kiếm sản phẩm"]
+    FE --- C["Xem danh mục sản phẩm"]
+    FE --- D["Đặt hàng"]
+    FE --- E["Quản lý cá nhân"]
+
+    A --- A1["Đăng nhập Email"]
+    A --- A2["Đăng nhập Google"]
+    A --- A3["Đăng ký tài khoản"]
+    A --- A4["Quên mật khẩu"]
+
+    B --- B1["Tìm theo tên"]
+    B --- B2["Lọc theo giá"]
+    B --- B3["Lọc theo size và màu"]
+    B --- B4["Sắp xếp kết quả"]
+
+    C --- C1["Áo"]
+    C --- C2["Quần"]
+    C --- C3["Đầm và Váy"]
+    C --- C4["Phụ kiện"]
+
+    D --- D1["Chọn sản phẩm"]
+    D --- D2["Quản lý giỏ hàng"]
+    D --- D3["Áp dụng voucher"]
+    D --- D4["Thanh toán"]
+
+    E --- E1["Xem đơn hàng"]
+    E --- E2["Quản lý địa chỉ"]
+    E --- E3["Sản phẩm yêu thích"]
+    E --- E4["Đánh giá sản phẩm"]
+    E --- E5["Voucher của tôi"]
+
+    %% Phân cấp bằng sắc độ nhẹ (vẫn là node chữ nhật)
+    classDef root  fill:#CFE2F3,stroke:#2A4D69,stroke-width:2px,color:#16324f;
+    classDef group fill:#EFEFEF,stroke:#666,stroke-width:1px,color:#222;
+    classDef leaf  fill:#FFFFFF,stroke:#888,stroke-width:1px,color:#222;
+
+    class FE root;
+    class A,B,C,D,E group;
+    class A1,A2,A3,A4,B1,B2,B3,B4,C1,C2,C3,C4,D1,D2,D3,D4,E1,E2,E3,E4,E5 leaf;
