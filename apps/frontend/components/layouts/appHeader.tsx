@@ -94,7 +94,7 @@ export default function AppHeader() {
       clearCart();
       resetFavorites();
       setDropdownOpen(false);
-      toast.success("Đã đăng xuất thành công!");
+      // toast.success("Đã đăng xuất thành công!");
       router.push("/");
     }
   };

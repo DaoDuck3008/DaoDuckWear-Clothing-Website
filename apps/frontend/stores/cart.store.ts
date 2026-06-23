@@ -1,10 +1,15 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { CartItem } from "@/types/cart.type";
 import { cartApi } from "@/apis/cart.api";
 import { useAuthStore } from "./auth.store";
+
+// Backend là nguồn dữ liệu thật của giỏ hàng — không persist giỏ ra localStorage.
+// Dọn key persist cũ để giỏ "ma" từ các phiên trước (kể cả khi chưa đăng nhập) biến mất.
+if (typeof window !== "undefined") {
+  localStorage.removeItem("daoduck-cart-storage");
+}
 
 interface CartState {
   items: CartItem[];
@@ -18,127 +23,119 @@ interface CartState {
   totalPrice: () => number;
 }
 
-export const useCartStore = create<CartState>()(
-  persist(
-    (set, get) => ({
-      items: [],
-      cartId: null,
+export const useCartStore = create<CartState>()((set, get) => ({
+  items: [],
+  cartId: null,
 
-      fetchCart: async () => {
-        const user = useAuthStore.getState().user;
-        if (!user) return;
+  fetchCart: async () => {
+    const user = useAuthStore.getState().user;
+    if (!user) return;
 
-        try {
-          const { data } = await cartApi.getCart();
+    try {
+      const { data } = await cartApi.getCart();
 
-          // Backend mapCart đã lọc null (variant/product bị xoá), chỉ cần lọc thêm phòng thủ
-          const validItems = (data.items ?? []).filter(
-            (item: any) => item?.variantId,
-          );
+      // Backend mapCart đã lọc null (variant/product bị xoá), chỉ cần lọc thêm phòng thủ
+      const validItems = (data.items ?? []).filter(
+        (item: any) => item?.variantId,
+      );
 
-          set({
-            items: validItems,
-            cartId: data.cartId,
-          });
-        } catch (error) {
-          console.error("Failed to fetch cart:", error);
-        }
-      },
+      set({
+        items: validItems,
+        cartId: data.cartId,
+      });
+    } catch (error) {
+      console.error("Failed to fetch cart:", error);
+    }
+  },
 
-      addItem: async (newItem) => {
-        const user = useAuthStore.getState().user;
-        const currentItems = get().items;
-        const existingItemIndex = currentItems.findIndex(
-          (item) =>
-            item.variantId === newItem.variantId &&
-            item.shopId === newItem.shopId,
+  addItem: async (newItem) => {
+    const user = useAuthStore.getState().user;
+    const currentItems = get().items;
+    const existingItemIndex = currentItems.findIndex(
+      (item) =>
+        item.variantId === newItem.variantId && item.shopId === newItem.shopId,
+    );
+
+    // Optimistic Update
+    let updatedItems = [...currentItems];
+    if (existingItemIndex > -1) {
+      updatedItems[existingItemIndex].quantity += newItem.quantity;
+    } else {
+      updatedItems = [newItem, ...currentItems];
+    }
+    set({ items: updatedItems });
+
+    // Sync with Backend
+    if (user) {
+      try {
+        await cartApi.addToCart(
+          newItem.variantId,
+          newItem.quantity,
+          newItem.shopId,
         );
+        await get().fetchCart();
+      } catch (error) {
+        console.error("Failed to add item to backend cart:", error);
+        // Có thể rollback UI ở đây nếu cần
+      }
+    }
+  },
 
-        // Optimistic Update
-        let updatedItems = [...currentItems];
-        if (existingItemIndex > -1) {
-          updatedItems[existingItemIndex].quantity += newItem.quantity;
-        } else {
-          updatedItems = [newItem, ...currentItems];
-        }
-        set({ items: updatedItems });
+  removeItem: async (itemId) => {
+    const user = useAuthStore.getState().user;
+    const itemToRemove = get().items.find((item) => item.id === itemId);
 
-        // Sync with Backend
-        if (user) {
-          try {
-            await cartApi.addToCart(
-              newItem.variantId,
-              newItem.quantity,
-              newItem.shopId,
-            );
-            await get().fetchCart();
-          } catch (error) {
-            console.error("Failed to add item to backend cart:", error);
-            // Có thể rollback UI ở đây nếu cần
-          }
-        }
-      },
+    // Optimistic Update
+    set({
+      items: get().items.filter((item) => item.id !== itemId),
+    });
 
-      removeItem: async (itemId) => {
-        const user = useAuthStore.getState().user;
-        const itemToRemove = get().items.find((item) => item.id === itemId);
+    // Sync with Backend
+    if (user && itemToRemove?.id) {
+      try {
+        await cartApi.removeItem(itemToRemove.id);
+      } catch (error) {
+        console.error("Failed to remove item from backend:", error);
+      }
+    }
+  },
 
-        // Optimistic Update
-        set({
-          items: get().items.filter((item) => item.id !== itemId),
-        });
+  updateQuantity: async (itemId, quantity) => {
+    if (quantity <= 0) {
+      await get().removeItem(itemId);
+      return;
+    }
 
-        // Sync with Backend
-        if (user && itemToRemove?.id) {
-          try {
-            await cartApi.removeItem(itemToRemove.id);
-          } catch (error) {
-            console.error("Failed to remove item from backend:", error);
-          }
-        }
-      },
+    const user = useAuthStore.getState().user;
+    const itemToUpdate = get().items.find((item) => item.id === itemId);
 
-      updateQuantity: async (itemId, quantity) => {
-        if (quantity <= 0) {
-          await get().removeItem(itemId);
-          return;
-        }
+    // Optimistic Update
+    set({
+      items: get().items.map((item) =>
+        item.id === itemId ? { ...item, quantity } : item,
+      ),
+    });
 
-        const user = useAuthStore.getState().user;
-        const itemToUpdate = get().items.find((item) => item.id === itemId);
+    // Sync with Backend
+    if (user && itemToUpdate?.id) {
+      try {
+        await cartApi.updateQuantity(itemToUpdate.id, quantity);
+      } catch (error) {
+        console.error("Failed to update quantity on backend:", error);
+      }
+    }
+  },
 
-        // Optimistic Update
-        set({
-          items: get().items.map((item) =>
-            item.id === itemId ? { ...item, quantity } : item,
-          ),
-        });
+  clearCart: () => set({ items: [], cartId: null }),
 
-        // Sync with Backend
-        if (user && itemToUpdate?.id) {
-          try {
-            await cartApi.updateQuantity(itemToUpdate.id, quantity);
-          } catch (error) {
-            console.error("Failed to update quantity on backend:", error);
-          }
-        }
-      },
+  totalItems: () => {
+    return get().items.reduce((total, item) => total + item.quantity, 0);
+  },
 
-      clearCart: () => set({ items: [] }),
-
-      totalItems: () => {
-        return get().items.reduce((total, item) => total + item.quantity, 0);
-      },
-
-      totalPrice: () => {
-        return get().items.reduce(
-          (total, item) => total + item.price * item.quantity,
-          0,
-        );
-      },
-    }),
-    {
-      name: "daoduck-cart-storage",
-    },
-  ),
-);
+  totalPrice: () => {
+    return get().items.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0,
+    );
+  },
+}));

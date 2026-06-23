@@ -20,6 +20,7 @@ import {
   PackageCheck,
   PackageX,
   Star,
+  Store,
 } from "lucide-react";
 import Link from "next/link";
 import { Fragment } from "react";
@@ -189,6 +190,12 @@ export default function OrderDetailPage() {
                       <h4 className="text-sm font-black text-black uppercase tracking-tight truncate leading-none">
                         {item.name}
                       </h4>
+                      {item.shopId?.name && (
+                        <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full bg-stone-100 text-[9px] font-black uppercase tracking-widest text-stone-600">
+                          <Store className="w-3 h-3" />
+                          {item.shopId.name}
+                        </span>
+                      )}
                       <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mt-2">
                         Màu: {item.color} • Size: {item.size}
                       </p>

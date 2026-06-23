@@ -54,7 +54,13 @@
       "Bash(git status *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(npx tsx *)"
+      "Bash(npx tsx *)",
+      "Bash(docker exec *)",
+      "Bash(powershell.exe -NoProfile -Command \"Test-NetConnection -ComputerName localhost -Port 6379 -InformationLevel Quiet\")",
+      "Bash(docker port *)",
+      "Bash(docker rm *)",
+      "Bash(docker compose *)",
+      "Bash(powershell.exe *)"
     ]
   }
 }

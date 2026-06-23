@@ -55,12 +55,14 @@ export default function LoginPage() {
       const res = await login(form);
       if (res.data.requiresVerification) {
         toast.info("Mã xác thực đã được gửi đến email của bạn.");
-        router.push(`/verify-email?email=${encodeURIComponent(res.data.email)}`);
+        router.push(
+          `/verify-email?email=${encodeURIComponent(res.data.email)}`,
+        );
         return;
       }
       const { accessToken, user } = res.data;
       setAuth(accessToken, user);
-      toast.success(`Chào mừng trở lại, ${user.username}!`);
+      // toast.success(`Chào mừng trở lại, ${user.username}!`);
       router.push("/");
     } catch (err: any) {
       handleApiError(
@@ -107,14 +109,16 @@ export default function LoginPage() {
 
           <div className="space-y-6">
             <GoogleLoginButton />
-            
+
             <div className="relative">
-               <div className="absolute inset-0 flex items-center">
-                   <div className="w-full border-t border-stone-200"></div>
-               </div>
-               <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-                   <span className="bg-white px-4 text-stone-400 font-bold">hoặc đăng nhập với email</span>
-               </div>
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-stone-200"></div>
+              </div>
+              <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
+                <span className="bg-white px-4 text-stone-400 font-bold">
+                  hoặc đăng nhập với email
+                </span>
+              </div>
             </div>
           </div>
 

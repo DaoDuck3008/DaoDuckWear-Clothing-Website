@@ -44,7 +44,10 @@ export default function ProfileHeader() {
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     }
@@ -60,7 +63,7 @@ export default function ProfileHeader() {
     } finally {
       clearAuth();
       setDropdownOpen(false);
-      toast.success("Đã đăng xuất thành công!");
+      // toast.success("Đã đăng xuất thành công!");
       router.push("/");
     }
   };

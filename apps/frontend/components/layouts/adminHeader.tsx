@@ -40,7 +40,7 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
     } finally {
       clearAuth();
       setDropdownOpen(false);
-      toast.success("Đã đăng xuất thành công!");
+      // toast.success("Đã đăng xuất thành công!");
       router.push("/");
     }
   };

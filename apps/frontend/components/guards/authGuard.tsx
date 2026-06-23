@@ -22,7 +22,7 @@ export default function AuthGuard({ children }: Props) {
 
   useEffect(() => {
     if (hydrated && !user) {
-      toast.warning("Bạn cần đăng nhập để vào trang này.");
+      // toast.warning("Bạn cần đăng nhập để vào trang này.");
       router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
     }
   }, [user, router, hydrated, pathname]);

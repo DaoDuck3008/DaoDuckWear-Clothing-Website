@@ -23,8 +23,8 @@ export default function GoogleLoginButton() {
 
           const { accessToken, user } = result.data;
           setAuth(accessToken, user);
-          
-          toast.success("Đăng nhập thành công!");
+
+          // toast.success("Đăng nhập thành công!");
           router.replace("/");
         } catch (error: any) {
           console.error("Google login failed: ", error);

@@ -19,7 +19,7 @@ function GuestGuardInner({ children }: { children: React.ReactNode }) {
     if (hydrated && user && !isToasted.current) {
       isToasted.current = true;
       router.replace(redirect);
-      toast.info("Bạn đã đăng nhập!");
+      // toast.info("Bạn đã đăng nhập!");
     }
   }, [user, hydrated, router, redirect]);
 
@@ -28,7 +28,11 @@ function GuestGuardInner({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export default function GuestGuard({ children }: { children: React.ReactNode }) {
+export default function GuestGuard({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <Suspense fallback={null}>
       <GuestGuardInner>{children}</GuestGuardInner>
