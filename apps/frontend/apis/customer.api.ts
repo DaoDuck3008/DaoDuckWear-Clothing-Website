@@ -45,6 +45,11 @@ export const customerApi = {
     return response.data;
   },
 
+  verifyCustomer: async (id: string): Promise<Customer> => {
+    const response = await api.patch(`/users/customers/${id}/verify`);
+    return response.data;
+  },
+
   promoteToStaff: async (
     id: string,
     shopId: string,

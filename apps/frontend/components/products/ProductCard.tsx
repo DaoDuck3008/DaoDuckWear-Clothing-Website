@@ -27,8 +27,10 @@ export default function ProductCard({ product, className }: ProductCardProps) {
   const { user } = useAuthStore();
   const router = useRouter();
 
-  const mainImage = product.images.find((img) => img.isMain)?.url || product.images[0]?.url;
-  const hoverImage = product.images.find((img) => !img.isMain)?.url || mainImage;
+  const mainImage =
+    product.images.find((img) => img.isMain)?.url || product.images[0]?.url;
+  const hoverImage =
+    product.images.find((img) => !img.isMain)?.url || mainImage;
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,7 +38,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
 
     if (!user) {
       toast.info("Vui lòng đăng nhập để lưu sản phẩm yêu thích");
-      router.push("/login");
+      // router.push("/login");
       return;
     }
 
@@ -55,14 +57,17 @@ export default function ProductCard({ product, className }: ProductCardProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link href={`/products/${product.slug}`} className="relative aspect-[3/4] overflow-hidden bg-stone-100">
+      <Link
+        href={`/products/${product.slug}`}
+        className="relative aspect-[3/4] overflow-hidden bg-stone-100"
+      >
         {/* Images */}
         <img
           src={mainImage}
           alt={product.name}
           className={cn(
             "w-full h-full object-cover transition-all duration-700 ease-in-out",
-            isHovered ? "opacity-0 scale-110" : "opacity-100 scale-100"
+            isHovered ? "opacity-0 scale-110" : "opacity-100 scale-100",
           )}
         />
         <img
@@ -70,7 +75,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
           alt={product.name}
           className={cn(
             "absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out",
-            isHovered ? "opacity-100 scale-100" : "opacity-0 scale-105"
+            isHovered ? "opacity-100 scale-100" : "opacity-0 scale-105",
           )}
         />
 
@@ -80,10 +85,15 @@ export default function ProductCard({ product, className }: ProductCardProps) {
             onClick={handleToggleFavorite}
             className={cn(
               "w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-black hover:text-white transition-all",
-              isFavorite(product.id) && "bg-editorial-accent text-white"
+              isFavorite(product.id) && "bg-editorial-accent text-white",
             )}
           >
-            <Heart className={cn("w-4 h-4", isFavorite(product.id) && "fill-current")} />
+            <Heart
+              className={cn(
+                "w-4 h-4",
+                isFavorite(product.id) && "fill-current",
+              )}
+            />
           </button>
           <button className="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-black hover:text-white transition-all">
             <Eye className="w-4 h-4" />
@@ -105,7 +115,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
             {product.category.name}
           </span>
         )}
-        <Link 
+        <Link
           href={`/products/${product.slug}`}
           className="text-xs font-bold uppercase tracking-wider line-clamp-1 hover:text-stone-500 transition-colors"
         >

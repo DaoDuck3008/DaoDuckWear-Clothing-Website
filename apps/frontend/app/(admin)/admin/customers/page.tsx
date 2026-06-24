@@ -13,6 +13,7 @@ import {
   Lock,
   RotateCcw,
   Search,
+  ShieldCheck,
   Unlock,
   User as UserIcon,
   Users,
@@ -63,6 +64,7 @@ export default function AdminCustomersPage() {
 
   const [detailId, setDetailId] = useState<string | null>(null);
   const [lockingId, setLockingId] = useState<string | null>(null);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -146,6 +148,27 @@ export default function AdminCustomersPage() {
       handleApiError(error);
     } finally {
       setLockingId(null);
+    }
+  };
+
+  const handleVerify = async (c: Customer) => {
+    const ok = await confirm({
+      title: "Xác thực tài khoản",
+      description: `Xác thực thủ công cho tài khoản "${c.username}". Khách hàng sẽ không cần xác thực qua email nữa.`,
+      confirmText: "Xác thực",
+    });
+    if (!ok) return;
+    setVerifyingId(c.id);
+    try {
+      const updated = await customerApi.verifyCustomer(c.id);
+      setCustomers((prev) =>
+        prev.map((it) => (it.id === c.id ? updated : it)),
+      );
+      toast.success("Đã xác thực tài khoản");
+    } catch (error) {
+      handleApiError(error);
+    } finally {
+      setVerifyingId(null);
     }
   };
 
@@ -469,6 +492,20 @@ export default function AdminCustomersPage() {
                           >
                             <Eye className="w-4 h-4" />
                           </button>
+                          {!c.isVerified && (
+                            <button
+                              onClick={() => handleVerify(c)}
+                              disabled={verifyingId === c.id}
+                              className="p-2 text-slate-400 hover:text-emerald-600 transition-colors disabled:opacity-50"
+                              title="Xác thực tài khoản"
+                            >
+                              {verifyingId === c.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <ShieldCheck className="w-4 h-4" />
+                              )}
+                            </button>
+                          )}
                           <button
                             onClick={() => handleLockToggle(c)}
                             disabled={lockingId === c.id}

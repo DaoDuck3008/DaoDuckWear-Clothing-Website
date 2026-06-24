@@ -816,4 +816,50 @@ export class UsersService {
 
     return this.serializeCustomer(updated);
   }
+
+  // Admin xác thực thủ công tài khoản khách (bỏ qua bước xác thực qua email)
+  async setCustomerVerified(id: string, actingUserId?: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Mã khách hàng không hợp lệ');
+    }
+
+    const userRoleId = await this.getCustomerRoleId();
+    const target = await this.userModel
+      .findOne({ _id: id, roleId: userRoleId, deletedAt: null })
+      .select('isVerified')
+      .lean();
+
+    if (!target) {
+      throw new NotFoundException('Không tìm thấy khách hàng');
+    }
+    if (target.isVerified) {
+      throw new BadRequestException('Tài khoản đã được xác thực');
+    }
+
+    const updated = await this.userModel
+      .findOneAndUpdate(
+        { _id: id, roleId: userRoleId, deletedAt: null },
+        { $set: { isVerified: true } },
+        { new: true },
+      )
+      .select(
+        'username email avatar provider isVerified isLocked addresses createdAt',
+      )
+      .lean();
+
+    if (!updated) {
+      throw new NotFoundException('Không tìm thấy khách hàng');
+    }
+
+    void this.auditLogsService.log({
+      userId: actingUserId,
+      action: 'VERIFY_CUSTOMER',
+      entityName: 'User',
+      entityId: updated._id,
+      oldData: { isVerified: false },
+      newData: { isVerified: true },
+    });
+
+    return this.serializeCustomer(updated);
+  }
 }

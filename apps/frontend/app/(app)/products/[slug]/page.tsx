@@ -180,7 +180,7 @@ export default function ProductDetailPage() {
   const handleToggleFavorite = async () => {
     if (!user) {
       toast.info("Vui lòng đăng nhập để lưu sản phẩm yêu thích");
-      router.push("/login");
+      // router.push("/login");
       return;
     }
     if (!product) return;
@@ -197,7 +197,7 @@ export default function ProductDetailPage() {
   const handleAddToCart = () => {
     if (!user) {
       toast.info("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng");
-      router.push("/login");
+      // router.push("/login");
       return;
     }
 
@@ -251,7 +251,7 @@ export default function ProductDetailPage() {
   const handleBuyNow = () => {
     if (!user) {
       toast.info("Vui lòng đăng nhập để mua hàng");
-      router.push("/login");
+      // router.push("/login");
       return;
     }
 
@@ -648,10 +648,7 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Reviews — lazy-loaded khi scroll đến, nằm trên Similar Products */}
-        <ReviewSection
-          productId={product.id}
-          onStatsLoaded={setRatingStats}
-        />
+        <ReviewSection productId={product.id} onStatsLoaded={setRatingStats} />
 
         {/* Similar Products — ref always in DOM for IntersectionObserver */}
         <div ref={similarSectionRef} className="mt-20 px-4">

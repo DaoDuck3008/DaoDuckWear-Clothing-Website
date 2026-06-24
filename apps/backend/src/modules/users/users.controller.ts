@@ -177,4 +177,14 @@ export class UsersController {
   ) {
     return this.usersService.setCustomerLock(id, false, user.id);
   }
+
+  @Patch('customers/:id/verify')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async verifyCustomer(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUserPayload,
+  ) {
+    return this.usersService.setCustomerVerified(id, user.id);
+  }
 }
