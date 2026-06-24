@@ -18,6 +18,7 @@ import { bannerApi } from "@/apis/banner.api";
 import { Select } from "@/components/ui/Select";
 import { handleApiError } from "@/utils/error.util";
 import { useConfirm } from "@/hooks/useConfirm";
+import RoleGuard from "@/components/guards/roleGuard";
 
 const PAGE_OPTIONS = [
   { value: "home", label: "Trang chủ" },
@@ -227,6 +228,7 @@ export default function AdminBannersPage() {
   };
 
   return (
+    <RoleGuard allowedRoles={["ADMIN"]}>
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -716,5 +718,6 @@ export default function AdminBannersPage() {
 
       {confirmDialog}
     </div>
+    </RoleGuard>
   );
 }

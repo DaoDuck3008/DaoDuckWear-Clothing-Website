@@ -7,6 +7,7 @@ import { categoryApi } from "@/apis/category.api";
 import { CategoryAdmin } from "@/types/product";
 import { handleApiError } from "@/utils/error.util";
 import { useConfirm } from "@/hooks/useConfirm";
+import RoleGuard from "@/components/guards/roleGuard";
 
 interface CategoryForm {
   name: string;
@@ -159,6 +160,7 @@ export default function AdminCategoriesPage() {
   };
 
   return (
+    <RoleGuard allowedRoles={["ADMIN"]}>
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -420,5 +422,6 @@ export default function AdminCategoriesPage() {
 
       {confirmDialog}
     </div>
+    </RoleGuard>
   );
 }

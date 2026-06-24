@@ -62,11 +62,13 @@ const menuItems: MenuItem[] = [
     title: "Quản lý danh mục",
     icon: Layers,
     href: "/admin/categories",
+    allowedRoles: ["ADMIN"],
   },
   {
     title: "Quản lý Banner",
     icon: ImagePlay,
     href: "/admin/banners",
+    allowedRoles: ["ADMIN"],
   },
   {
     title: "Quản lý đơn hàng",
